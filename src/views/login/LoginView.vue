@@ -1,9 +1,9 @@
 <script setup name="login">
 import { reactive } from 'vue'
-// import axios from 'axios'
 import { useCounterStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import authHttp from '@/api/authHttp'
+import { ElMessage } from 'element-plus'
 
 const authStore = useCounterStore()
 const router = useRouter()
@@ -19,11 +19,17 @@ const onsubmit = async () => {
   let emailRgx = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9])+/
   // 执行验证
   if (!emailRgx.test(form.email)) {
-    alert('邮箱不正确!')
+    ElMessage({
+      message: '邮箱格式不正确!',
+      type: 'warning',
+    })
     return
   }
   if (!pwdRgx.test(form.password)) {
-    alert('密码不正确!')
+    ElMessage({
+      message: '密码长度不正确!',
+      type: 'warning',
+    })
     return
   }
 
@@ -35,7 +41,7 @@ const onsubmit = async () => {
     // 路由跳转
     router.push({ name: 'frame' })
   } catch (detail) {
-    alert(detail)
+    ElMessage.error(detail)
   }
 }
 </script>
@@ -43,7 +49,11 @@ const onsubmit = async () => {
 <template>
   <div class="login-container">
     <div class="login-box">
-      <h2 class="title">[myoa]企业管理_登录</h2>
+      <h3 class="title">
+        <small>欢迎光临</small>
+        MyOA
+        <small>请先登录</small>
+      </h3>
       <form>
         <div class="input-group">
           <label for="email">电子邮件</label>
@@ -81,7 +91,7 @@ const onsubmit = async () => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #6e7dff, #a0c4ff);
+  background: linear-gradient(135deg, #a5acf1, #2b369c);
 }
 
 .login-box {

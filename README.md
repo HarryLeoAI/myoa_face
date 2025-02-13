@@ -352,3 +352,64 @@ router.push({ name: 'frame' })
     3. 在`http.js`的Http类里,我还定义了一个名叫`post()`的方法,它里面采用`Promise`实现向服务器发起异步请求,成功则获取响应的json数据,失败则返回400状态码+错误信息.
     4. 为了进一步封装, 我还新建了 `authHttp.js` ,它导入http并定义了`login(email, password)`方法, 在这一层封装里,我来实现登录时,最终准确请求地址的配置`path`,以及传入参数`{email, password}`作为`data`
     5. 但以上两层都是为了代码的复用和美观,实际调用还是在`~/src/views/LoginView.vue`中, 这时候代码就相当简洁了
+
+# ElementPlus
+
+> <a href="https://cn.element-plus.org/zh-CN/component/overview.html">Vue御用组件库</a>
+
+### 安装
+
+- 项目内执行命令: `npm install element-plus --save-dev`
+  > --save-dev 意思是保存依赖, 但只保存在开发环境中
+
+### 在项目中使用
+
+- `main.js`
+
+```js
+// ...
+// 导入这两个包
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
+const app = createApp(App)
+// ...
+// 声明使用
+app.use(ElementPlus)
+
+// ...
+```
+
+### 改写提示信息
+
+- `~/src/views/LoginView.vue`
+
+```js
+import { ElMessage } from 'element-plus' //导入提示信息包
+
+// ...
+// 前端验证
+if (!emailRgx.test(form.email)) {
+  ElMessage({
+    message: '邮箱格式不正确!',
+    type: 'warning',
+  })
+  return
+}
+if (!pwdRgx.test(form.password)) {
+  ElMessage({
+    message: '密码长度不正确!',
+    type: 'warning',
+  })
+  return
+}
+
+// 后端验证
+try {
+  // ...
+} catch (detail) {
+  ElMessage.error(detail)
+}
+```
+
+- 服务端的返回的detail的值也要重写
