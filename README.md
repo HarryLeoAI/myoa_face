@@ -412,4 +412,43 @@ try {
 }
 ```
 
-- 服务端的返回的detail的值也要重写
+- 服务端的返回的detail的值也要重写, 略
+
+# 实现布局
+
+### 基础布局
+
+- <a href="https://cn.element-plus.org/zh-CN/component/container.html">element-plus为我们提供的布局参考</a>
+
+- 导入布局,配置样式,具体代码略.
+  - 实现块级元素高度=当前页面高度:`height: 100vh`
+  - 实现渐变色背景`background: linear-gradient(135deg, #a5acf1, #2b369c);`
+  - `router-link` 渲染出来其实是一个行内元素,为了让它和块级元素一样,默认宽度为父元素的100%:`display: flex;`
+  - 然后使用文字水平垂直居中`justify-content: center;`,`align-items: center;`
+
+### Element-Plus的图标库
+
+- 想要使用Elment-plus-icon: `npm install @element-plus/icons-vue --save-dev`
+- 然后在main.js中
+
+```js
+// 导包
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+
+// 注册所有的icon
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
+```
+
+- 投入使用, <a href="https://cn.element-plus.org/zh-CN/component/icon.html">图标参考</a>
+
+```html
+<!-- el-icon 标签里面包需要图标的标签,建议直接从图标参考里面取 -->
+<el-icon><home /></el-icon>
+```
+
+### 导航条
+
+- 同样参考Element-plus为我们提供的<a href="https://cn.element-plus.org/zh-CN/component/menu.html">示例</a>
+- 复制粘贴,修修改改,略
