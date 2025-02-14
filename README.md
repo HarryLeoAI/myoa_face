@@ -620,6 +620,8 @@ let is_logined = computed(() => {
 
 > 为什么要用`user.value`,而不是`_user.value`呢? 仔细观看代码, 发现浏览器每次跳转或刷新, `_user.value` 在最上面就定义为空了, 而真正保管localstroage里user和token的值的是`user`, `token`这俩不带下划线的计算属性中, 且它俩定义在`is_logined`上面,所以可以直接读取
 
+- 注意, 此时只是前端部分通过`全局路由守卫`实现了访问的限制, 但后端并没有, 无论在哪里, 无论是否登录, 包括用postman, 仍可以继续往后端的接口发送请求, 所以我们还需要完善后端部分, 此处略.
+
 ### 退出登录
 
 - `~/src/views/FrameView.vue`中,定义登出方法`logout`,再给`退出登录`按钮绑上该事件
