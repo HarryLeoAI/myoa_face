@@ -44,7 +44,9 @@ const logout = () => {
     >
       <el-menu-item index="1" class="brand">
         <el-icon><HomeFilled /></el-icon>
-        <span>MyOA</span>
+        <span>
+          <router-link :to="{ name: 'frame' }" class="brand-text"> MyOA</router-link>
+        </span>
       </el-menu-item>
 
       <el-sub-menu index="2">
@@ -139,10 +141,13 @@ const logout = () => {
 }
 .brand {
   background-color: #1d2151;
-  color: #fff;
-  font-size: 18px;
-  font-weight: bold;
   height: 66px;
+}
+.brand-text {
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  font-weight: bolder;
 }
 .header {
   background-color: #fff;
