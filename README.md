@@ -452,3 +452,69 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 - 同样参考Element-plus为我们提供的<a href="https://cn.element-plus.org/zh-CN/component/menu.html">示例</a>
 - 复制粘贴,修修改改,略
+
+### 导航条伸缩
+
+> 要实现:header部分有一个按钮,点击后按钮自己改变图标(展开或者折叠), 侧边栏同步伸缩.
+
+- 具体代码如下
+
+```vue
+<script setup name="frame">
+import { ref, computed } from 'vue'
+// ...
+let isCollapse = ref(false) // 是否伸缩:默认不伸缩
+let asideWidth = computed(() => {
+  // aside宽度:计算属性
+  if (isCollapse.value) {
+    // 如果伸缩
+    return '64px' // aside为64px
+  } else {
+    // 如果不伸缩
+    return '250px' // aside宽度为250px
+  }
+})
+
+// 点击事件
+const toggleAside = () => {
+  isCollapse.value = !isCollapse.value
+}
+</script>
+<template>
+  <!-- 侧边栏绑定计算属性 -->
+  <el-aside class="aside" :width="asideWidth">
+    <!-- 具体内容, 略 -->
+  </el-aside>
+
+  <!-- ... -->
+
+  <!-- 顶部导航处增加按钮 -->
+  <el-header class="header">
+    <div class="left-header">
+      <!-- 通过v-show来确定具体展示哪个按钮 -->
+      <el-button :icon="Expand" v-show="isCollapse" @click="toggleAside"></el-button>
+      <el-button :icon="Fold" v-show="!isCollapse" @click="toggleAside"></el-button>
+    </div>
+
+    <!-- 其余内容, 略 -->
+  </el-header>
+</template>
+```
+
+> 待处理问题: 侧边栏里的`<el-menu>`默认自带动画`:collapse-transition="true"`, 但因为侧边栏没有动画, 所以我点击伸缩后, 视觉上会出现bug, 侧边栏瞬间缩进去, 但其内部的菜单还在跑动画. 为了解决这个问题, 我采用了关闭动画`:collapse-transition="false"`这样一种不太好的方法. 最优的解决是:给外部的`aside`绑定同样的动画
+
+> 我找到了更好的解决办法, 就是直接不需要`<el-aside>`来包裹我们的侧边栏.侧边的`<el-container>`里面直接包`<el-menu>`, 然后把侧边栏第一项,原本的首页设置为我们的`logo`
+
+### header 布局
+
+- 只有一个重要的知识点,就是用flex布局实现块级元素分列左右
+
+  > 需要实现:header最左边是侧边栏伸缩, 最右边是登录信息展示
+
+  1. 先把header设置为flex布局:`display:flex`
+  2. 声明其内部元素左右分列`justify-content: space-between`,上下居中 `align-items: center`
+
+  ```css
+  justify-content: space-between;
+  align-items: center;
+  ```
