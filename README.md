@@ -362,7 +362,7 @@ router.push({ name: 'frame' })
 - 项目内执行命令: `npm install element-plus --save-dev`
   > --save-dev 意思是保存依赖, 但只保存在开发环境中
 
-### 在项目中使用
+### 在项目中投入使用
 
 - `main.js`
 
@@ -518,3 +518,162 @@ const toggleAside = () => {
   justify-content: space-between;
   align-items: center;
   ```
+
+# 继续完善认证功能
+
+### 修复bug
+
+> 在js中, 空对象`{}`也为真(true)!
+
+- 所以`~/src/stores/auth.js`中:
+
+```js
+let _user = ref({})
+
+// 计算属性
+let user = computed(() => {
+  // 如果_user为空
+  if (!_user.value) {
+    //这句话永远都进不来, 因为user即使是{里面什么都没有}, 也为真
+    _user.value = localStorage.getItem(USER_KEY)
+  }
+  return _user.value
+})
+```
+
+> 但空字符串`''`为假(false)!
+
+> 同时 `null` 也是一个对象
+
+- 修复bug后的代码:
+
+```js
+// 计算属性
+  let user = computed(() => {
+    // 如果没有键名数组,说明对象为空
+    if (Object.keys(_user.value).length == 0) // Object.keys(obj): 以数组的形式返回obj对象里的keys, .length获取该数组的长度, 如果为0证明数组为空, 数组为空证明对象没有keys, 证明对象为空
+      // 获取浏览器里的数据
+      user_str = localStorage.getItem(USER_KEY)
+      if (user_str) {
+        // 赋值给_user.value
+        _user.value = JSON.parse(user_str)
+      }
+    }
+    return _user.value
+  })
+
+  let token = computed(() => {
+    if (!_token.value) {
+      // 为了防止将null对象赋值给token, 先尝试取出浏览器里存储的token
+      token_str = localStorage.getItem(TOKEN_KEY)
+      // 如果token有值, 再交给_token.value
+      if (token_str) {
+        _token.value = token_str
+      }
+    }
+    // 如果没有值, 返回的也依旧是空字符串 '', 而非 null
+    return _token.value
+  })
+```
+
+### 限制访问
+
+> 分析项目, 作为OA系统, 应要求只有登录页面无需登录认证, 其余所有页面都要求用户登录后才可以访问.
+
+- 因此我们可以使用`全局导航守卫`进行访问限制
+
+- 编辑`~/src/router/index.js`
+
+```js
+// 导包
+import { useAuthStore } from '@/stores/auth'
+import { ElMessage } from 'element-plus'
+
+// ...
+
+// 全局导航守卫
+router.beforeEach((to) => {
+  // 判断用户是否登录, 如果没有登录, 则强行跳转到登录页面
+  const authStore = useAuthStore()
+  if (!authStore.is_logined && to.name != 'login') {
+    ElMessage.error('请先登录!')
+    return { name: 'login' }
+  }
+})
+```
+
+- 完成`authStore.is_logined`属性, 在`~/src/stores/auth.js`中
+
+```js
+// 定义计算属性is_logined
+let is_logined = computed(() => {
+  // 如果对象键名组成的数组长度大于0, 且token有值, 即既有user, 也有token, 说明已经登录
+  if (Object.keys(user.value).length > 0 && token.value) {
+    // 登录返回真
+    return true
+  } else {
+    // 否则返回假
+    return false
+  }
+})
+```
+
+> 为什么要用`user.value`,而不是`_user.value`呢? 仔细观看代码, 发现浏览器每次跳转或刷新, `_user.value` 在最上面就定义为空了, 而真正保管localstroage里user和token的值的是`user`, `token`这俩不带下划线的计算属性中, 且它俩定义在`is_logined`上面,所以可以直接读取
+
+### 退出登录
+
+- `~/src/views/FrameView.vue`中,定义登出方法`logout`,再给`退出登录`按钮绑上该事件
+
+```vue
+<script setup name="frame">
+//...
+
+import { useRouter } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
+
+//...
+
+// 退出登录
+const logout = () => {
+  ElMessageBox.confirm('即将退出登录,是否确认?', '确认退出?', {
+    confirmButtonText: '确认退出',
+    cancelButtonText: '点错了,返回',
+    type: 'warning',
+  })
+    // 如果点击"确认退出",
+    .then(() => {
+      authStore.clearUserToken() // 调用 clearUserToken() 清理浏览器存储的user和token
+      router.push({ name: 'login' }) // 然后跳转到登录页面
+    })
+    // 如果点击"点错了,返回"
+    .catch(() => {
+      return false //那啥也不干
+    })
+}
+</script>
+
+<template>
+  <!-- ... -->
+  <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+  <!-- ... -->
+</template>
+```
+
+- 完善`~/stores/auth.js`
+
+```js
+//...
+
+// 退出登录, 清除内存和浏览器里的 user & token
+const clearUserToken = () => {
+  _user.value = {}
+  _token.value = ''
+  localStorage.removeItem(USER_KEY)
+  localStorage.removeItem(TOKEN_KEY)
+}
+
+// 记得暴露以供外部使用
+return { setUserToken, clearUserToken, user, token, is_logined }
+```
+
+> 能不能直接在`auth.js`里, `clearUserToken()` 方法中实现弹窗确认以及跳转的逻辑呢? 可以,但是我们就又要在auth.js里导入`useRouter`. 但`FrameView.vue` 文件作为整站框架页面, 势必有很多路由跳转需要实现, 所以我更愿意在`FrameView.vue`里面引入路由`import { useRouter } from 'vue-router'`, 而非专用于权限认证的`auth.js`中

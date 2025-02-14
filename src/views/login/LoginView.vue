@@ -1,11 +1,11 @@
 <script setup name="login">
 import { reactive } from 'vue'
-import { useCounterStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import authHttp from '@/api/authHttp'
 import { ElMessage } from 'element-plus'
 
-const authStore = useCounterStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 let form = reactive({

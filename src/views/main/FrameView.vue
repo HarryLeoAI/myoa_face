@@ -1,11 +1,33 @@
 <script setup name="frame">
 import { ref } from 'vue'
 import { Expand, Fold, ArrowDown, UserFilled } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
 
+let authStore = useAuthStore()
+let router = useRouter()
 let isCollapse = ref(false)
 
+// 侧边栏开关
 const toggleAside = () => {
   isCollapse.value = !isCollapse.value
+}
+
+// 退出登录
+const logout = () => {
+  ElMessageBox.confirm('即将退出登录,是否确认?', '确认退出?', {
+    confirmButtonText: '确认退出',
+    cancelButtonText: '点错了,返回',
+    type: 'warning',
+  })
+    .then(() => {
+      authStore.clearUserToken()
+      router.push({ name: 'login' })
+    })
+    .catch(() => {
+      return false
+    })
 }
 </script>
 
@@ -75,15 +97,21 @@ const toggleAside = () => {
       <!-- 顶部导航 -->
       <el-header class="header">
         <div class="left-header">
-          <el-button :icon="Expand" v-show="isCollapse" @click="toggleAside"></el-button>
-          <el-button :icon="Fold" v-show="!isCollapse" @click="toggleAside"></el-button>
+          <el-button v-show="isCollapse" @click="toggleAside">
+            <strong>展开</strong>
+            <el-icon><Expand /></el-icon>
+          </el-button>
+          <el-button v-show="!isCollapse" @click="toggleAside">
+            <el-icon><Fold /></el-icon>
+            <strong>折叠</strong>
+          </el-button>
         </div>
         <div class="right-header">
           <el-dropdown>
             <span class="el-dropdown-link">
-              <el-avatar :icon="UserFilled" :size="30"></el-avatar>
+              <el-avatar :icon="UserFilled" :size="30" style="margin-right: 8px"></el-avatar>
               <span>
-                真实姓名
+                {{ authStore.user.realname }}-({{ authStore.user.department.name }})
                 <el-icon class="el-icon--right">
                   <arrow-down />
                 </el-icon>
@@ -92,7 +120,7 @@ const toggleAside = () => {
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item>修改密码</el-dropdown-item>
-                <el-dropdown-item>退出登录</el-dropdown-item>
+                <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
