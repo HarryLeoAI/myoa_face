@@ -6,4 +6,9 @@ const login = (email, password) => {
   return http.post(path, { email, password })
 }
 
-export default { login }
+const resetPassword = (new_password, old_password, check_new_password) => {
+  const path = 'auth/resetpassword'
+  return http.put(path, { new_password, old_password, check_new_password })
+}
+
+export default { login, resetPassword }

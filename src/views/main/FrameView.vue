@@ -1,20 +1,26 @@
 <script setup name="frame">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { Expand, Fold, ArrowDown, UserFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import authHttp from '@/api/authHttp'
 
 let authStore = useAuthStore()
 let router = useRouter()
+
+/**
+ * 侧边栏开关
+ */
 let isCollapse = ref(false)
 
-// 侧边栏开关
 const toggleAside = () => {
   isCollapse.value = !isCollapse.value
 }
 
-// 退出登录
+/**
+ * 退出登录
+ */
 const logout = () => {
   ElMessageBox.confirm('即将退出登录,是否确认?', '确认退出?', {
     confirmButtonText: '确认退出',
@@ -29,9 +35,72 @@ const logout = () => {
       return false
     })
 }
+
+/**
+ * 密码修改
+ */
+const formLabelWidth = '80px'
+let dialogFormVisible = ref(false)
+let resetPasswordForm = ref()
+
+const resetPasswordFormData = reactive({
+  user: authStore.user,
+  old_password: '',
+  new_password: '',
+  check_new_password: '',
+})
+
+const toggleResetPasswordForm = () => {
+  resetPasswordFormData.old_password = ''
+  resetPasswordFormData.new_password = ''
+  resetPasswordFormData.check_new_password = ''
+  dialogFormVisible.value = true
+}
+
+let resetPasswordFormRules = reactive({
+  old_password: [
+    { required: true, message: '必须填写旧密码', trigger: 'blur' },
+    { min: 6, max: 30, message: '密码长度必须在6~30位之间', trigger: 'blur' },
+  ],
+
+  new_password: [
+    { required: true, message: '必须填写旧密码', trigger: 'blur' },
+    { min: 6, max: 30, message: '密码长度必须在6~30位之间', trigger: 'blur' },
+  ],
+
+  check_new_password: [
+    { required: true, message: '必须填写旧密码', trigger: 'blur' },
+    { min: 6, max: 30, message: '密码长度必须在6~30位之间', trigger: 'blur' },
+  ],
+})
+
+const resetPassword = async () => {
+  resetPasswordForm.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        await authHttp.resetPassword(
+          resetPasswordFormData.new_password,
+          resetPasswordFormData.old_password,
+          resetPasswordFormData.check_new_password,
+        )
+        ElMessage.success('密码修改成功!')
+        dialogFormVisible.value = false
+      } catch (detail) {
+        ElMessage.error(detail)
+      }
+    } else {
+      ElMessage.error('密码长度错误!')
+      return false
+    }
+  })
+}
+/**
+ * 密码修改代码块结束
+ */
 </script>
 
 <template>
+  <!-- 主体 -->
   <el-container class="container">
     <!-- 侧边栏 -->
     <el-menu
@@ -113,7 +182,9 @@ const logout = () => {
             <span class="el-dropdown-link">
               <el-avatar :icon="UserFilled" :size="30" style="margin-right: 8px"></el-avatar>
               <span>
-                {{ authStore.user.realname }}-({{ authStore.user.department.name }})
+                {{ authStore.user.realname }}
+                -
+                <!-- ({{ authStore.user.department.name }}) -->
                 <el-icon class="el-icon--right">
                   <arrow-down />
                 </el-icon>
@@ -121,7 +192,7 @@ const logout = () => {
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>修改密码</el-dropdown-item>
+                <el-dropdown-item @click="toggleResetPasswordForm()">修改密码</el-dropdown-item>
                 <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -132,6 +203,27 @@ const logout = () => {
       <el-main class="main">Main</el-main>
     </el-container>
   </el-container>
+
+  <!-- 修改密码对话框表单 -->
+  <el-dialog v-model="dialogFormVisible" title="修改密码" width="500">
+    <el-form :model="resetPasswordFormData" :rules="resetPasswordFormRules" ref="resetPasswordForm">
+      <el-form-item label="旧密码" :label-width="formLabelWidth" prop="old_password">
+        <el-input type="password" v-model="resetPasswordFormData.old_password" />
+      </el-form-item>
+      <el-form-item label="新的密码" :label-width="formLabelWidth" prop="new_password">
+        <el-input type="password" v-model="resetPasswordFormData.new_password" />
+      </el-form-item>
+      <el-form-item label="再输一次" :label-width="formLabelWidth" prop="check_new_password">
+        <el-input type="password" v-model="resetPasswordFormData.check_new_password" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogFormVisible = false"> 返回 </el-button>
+        <el-button type="primary" @click="resetPassword"> 确认 </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>

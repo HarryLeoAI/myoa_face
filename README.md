@@ -679,3 +679,177 @@ return { setUserToken, clearUserToken, user, token, is_logined }
 ```
 
 > 能不能直接在`auth.js`里, `clearUserToken()` 方法中实现弹窗确认以及跳转的逻辑呢? 可以,但是我们就又要在auth.js里导入`useRouter`. 但`FrameView.vue` 文件作为整站框架页面, 势必有很多路由跳转需要实现, 所以我更愿意在`FrameView.vue`里面引入路由`import { useRouter } from 'vue-router'`, 而非专用于权限认证的`auth.js`中
+
+### 修改密码
+
+- 借用`Element-plus`feedback组件(反馈组件)中的`dialog`(对话框组件)实现(对话框弹出一个表单), 先把视图层搭建好`~/src/views/FrameView.vue`
+
+```vue
+<script setup name="frame">
+// ...
+
+// 密码修改
+const formLabelWidth = '80px' // 表单lable宽度
+let dialogFormVisible = ref(false) // 表单是否弹出,默认不弹出
+let resetPasswordForm = ref() // 表单验证用
+
+// 表单数据
+const resetPasswordFormData = reactive({
+  user: authStore.user,
+  old_password: '',
+  new_password: '',
+  check_new_password: '',
+})
+
+// 单机修改密码按钮后, 弹出对话框
+const toggleResetPasswordForm = () => {
+  // 先把数据都清空
+  resetPasswordFormData.old_password = ''
+  resetPasswordFormData.new_password = ''
+  resetPasswordFormData.check_new_password = ''
+  // 然后表单可见
+  dialogFormVisible.value = true
+}
+
+// 定义验证规则
+let resetPasswordFormRules = reactive({
+  // 字段:[{规则1:规制值1, 错误提示1_message:'', trigger:'blur' 意为当input失焦时进行提示}]
+  old_password: [
+    { required: true, message: '必须填写旧密码', trigger: 'blur' },
+    { min: 6, max: 30, message: '密码长度必须在6~30位之间', trigger: 'blur' },
+  ],
+
+  new_password: [
+    { required: true, message: '必须填写旧密码', trigger: 'blur' },
+    { min: 6, max: 30, message: '密码长度必须在6~30位之间', trigger: 'blur' },
+  ],
+
+  check_new_password: [
+    { required: true, message: '必须填写旧密码', trigger: 'blur' },
+    { min: 6, max: 30, message: '密码长度必须在6~30位之间', trigger: 'blur' },
+  ],
+})
+
+// 密码修改函数(表单提交按钮的点击事件)
+const resetPassword = async () => {
+  // 1, 验证密码, 通过form的ref对象.value.validate进行验证
+  resetPasswordForm.value.validate(async (valid) => {
+    // valid 为真则通过验证
+    if (valid) {
+      // 通过验证,开始调用authHttp.resetPassword()方法, 详见 authHttp.js
+      try {
+        await authHttp.resetPassword(
+          resetPasswordFormData.new_password,
+          resetPasswordFormData.old_password,
+          resetPasswordFormData.check_new_password,
+        )
+        // 执行成功,提示信息,关闭表单对话框
+        ElMessage.success('密码修改成功!')
+        dialogFormVisible.value = false
+      } catch (detail) {
+        // 执行失败, 打印服务器返回的错误信息
+        ElMessage.error(detail)
+      }
+    } else {
+      // 否则则没有通过验证
+      ElMessage.error('密码长度错误!')
+      return false
+    }
+  })
+}
+</script>
+
+<template>
+  <!-- 修改密码表单 -->
+  <!-- 这里绑定在 el-dialog 上面的v-model是整个对话框显示与否的属性 -->
+  <el-dialog v-model="dialogFormVisible" title="修改密码" width="500">
+    <!-- 这里:model就是表单里表单项的具体值了, :rules 则是表单验证规则 ref则是为了用于表单验证的属性 -->
+    <el-form :model="resetPasswordFormData" :rules="resetPasswordFormRules" ref="resetPasswordForm">
+      <!-- 要想正确展示提示信息, 必须给 el-form-item 写上 prop属性 -->
+      <el-form-item label="旧密码" :label-width="formLabelWidth" prop="old_password">
+        <el-input type="password" v-model="resetPasswordFormData.old_password" />
+      </el-form-item>
+      <el-form-item label="新的密码" :label-width="formLabelWidth" prop="new_password">
+        <el-input type="password" v-model="resetPasswordFormData.new_password" />
+      </el-form-item>
+      <el-form-item label="再输一次" :label-width="formLabelWidth" prop="check_new_password">
+        <el-input type="password" v-model="resetPasswordFormData.check_new_password" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogFormVisible = false"> 返回 </el-button>
+        <el-button type="primary" @click="resetPassword"> 确认 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+```
+
+- 然后完成`~/api/authHttp.js`中的`resetPassword()`方法
+
+```js
+const resetPassword = (new_password, old_password, check_new_password) => {
+  const path = 'auth/resetpassword'
+  return http.put(path, { new_password, old_password, check_new_password })
+}
+
+// 记得暴露以供外部调用
+export default { login, resetPassword }
+```
+
+- **配置请求头**, 同时完成`~/api/http.js`中的`put()`方法
+
+```js
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+
+class Http {
+  constructor() {
+    this.instance = axios.create({
+      baseURL: import.meta.env.VITE_BASE_URL,
+      timeout: 10000,
+    })
+
+    // 配置请求头axios.intercrptors.request.use() :在请求发送出去之前做一些事
+    this.instance.interceptors.request.use((config) => {
+      // 先把Pinia 里 authStore 这个全局变量存储的token提取出来(其实就是pinia帮我们取localstorage里的token)
+      const authStore = useAuthStore()
+      const token = authStore.token
+      // 然后判断token有没有, 有就交给他
+      if (token) {
+        config.headers.Authorization = 'JWT' + ' ' + authStore.token
+      }
+      return config
+    })
+  }
+
+  // put和post方法一模一样, 只是为了规范(增加:post, 修改:put)而使用put方法封装axios.put()
+  // put('url', data对象)
+}
+```
+
+- 这里我产生了一个疑问, `axios.create()` 里面可以直接配置`headers` 属性, 所以我一开始这么写了
+
+```js
+class Http {
+  constructor() {
+    const authStore = useAuthStore() // 先读取存储的user+token数据
+    this.instance = axios.create({
+      baseURL: import.meta.env.VITE_BASE_URL,
+      timeout: 10000,
+      headers: {
+        Authorization: 'JWT' + ' ' + authStore.token, // 一开始我在这里给请求头添加 jwt token
+      },
+    })
+  }
+
+  // ...
+}
+```
+
+- 但是会报错说:""getActivePinia()" was called but there was no active Pinia. Are you trying to use a store before calling "app.use(pinia)"?", 意为 `app.use(pinia)` 之前我们就在尝试使用 pinia 存储的数据了. 说白了, 就是无解, 必须使用`axios.interceptors.request.use` 请求拦截器.
+
+> 这个拦截器就像我们在django里配置的中间件一样, django是在请求达到视图前进行登录认证, 这个拦截器实在请求发送出去之前做一些处理.我在里面处理的事情就是配置了请求头
+
+- 最后, 为了代码统一, 在后端把`ResetPasswordView`改一改,原本写的通过`post`改密码,现在改`put`请求了
