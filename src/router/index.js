@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import LoginView from '@/views/login/LoginView.vue'
 import FrameView from '@/views/main/FrameView.vue'
+import MyAbsent from '@/views/absent/MyAbsent.vue'
+import SubAbent from '@/views/absent/SubAbent.vue'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 
@@ -11,6 +13,18 @@ const router = createRouter({
       path: '/',
       name: 'frame',
       component: FrameView,
+      children: [
+        {
+          path: 'absent/my',
+          name: 'myabsent',
+          component: MyAbsent,
+        },
+        {
+          path: 'absent/sub',
+          name: 'subabsent',
+          component: SubAbent,
+        },
+      ],
     },
     {
       path: '/login',

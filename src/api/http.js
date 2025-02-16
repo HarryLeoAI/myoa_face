@@ -1,16 +1,11 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
-
 class Http {
   constructor() {
     this.instance = axios.create({
       baseURL: import.meta.env.VITE_BASE_URL,
       timeout: 10000,
-      headers: {
-        Authorization: 'JWT' + ' ' + authStore.token,
-      },
     })
 
     this.instance.interceptors.request.use((config) => {

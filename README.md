@@ -853,3 +853,134 @@ class Http {
 > 这个拦截器就像我们在django里配置的中间件一样, django是在请求达到视图前进行登录认证, 这个拦截器实在请求发送出去之前做一些处理.我在里面处理的事情就是配置了请求头
 
 - 最后, 为了代码统一, 在后端把`ResetPasswordView`改一改,原本写的通过`post`改密码,现在改`put`请求了
+
+# 完成考勤功能
+
+> 后端接口已实现
+
+### 前端布局
+
+1. 两个新的视图: `SubAbsent`, `MyAbsent` => 下属的考勤, 自己的考勤, 以`~/src/views/absent/MyAbsent.vue`为例
+
+```vue
+<script setup>
+// 导入组件OAPageHeader
+import OAPageHeader from '@/components/OAPageHeader.vue'
+</script>
+
+<template>
+  <!-- 使用 el-space 实现内部块级元素自动产生相同间距 -->
+  <!-- style="width" => 宽度为当前父元素的100%,  -->
+  <!-- direction="vertical" => 设置的是垂直间距 -->
+  <!-- fill="true" => 内部子元素的宽度占满父元素 -->
+  <!-- :size="15" => 间距大小 -->
+  <el-space style="width: 100%" direction="vertical" fill="true" :size="15">
+    <!-- 导入其他组件时,给props传递参数, 其余代码详见组件部分 -->
+    <OAPageHeader content="个人考勤"></OAPageHeader>
+    <el-card style="text-align: right">
+      <el-button type="primary">
+        <el-icon><Plus /></el-icon>
+        <span>发起考勤</span>
+      </el-button>
+    </el-card>
+  </el-space>
+</template>
+
+<style scoped></style>
+```
+
+2. 组件化提高代码的复用性(props实现组件间参数传递), 新建`~/src/components/OAPageHeader.vue`, 这个组件在所有页面都充当头部
+
+```vue
+<script setup name="OAPageHeader">
+import { useRouter } from 'vue-router'
+import { defineProps } from 'vue'
+
+// 传递参数显示不同的内容, 就需要使用到 defineProps({'key': '默认值', ...})
+// 在其他视图渲染该组件时, 为了展现不同的内容, 只需要给指定的key传递想要的值即可
+let props = defineProps({
+  content: '',
+})
+
+// 实现路由跳转功能
+const router = useRouter()
+const goBack = () => {
+  // router.go(-1) 返回上一个路由
+  router.go(-1)
+}
+</script>
+
+<template>
+  <el-page-header @back="goBack" title="返回">
+    <template #content>
+      <span class="text-large font-600 mr-3"> {{ props.content }} </span>
+    </template>
+  </el-page-header>
+</template>
+
+<style scoped></style>
+```
+
+3. 配置路由, `~/src/router/index.js`
+
+```js
+// ...
+
+// 导入路由
+import MyAbsent from '@/views/absent/MyAbsent.vue'
+import SubAbent from '@/views/absent/SubAbent.vue'
+
+// ...
+routes: [
+  {
+    path: '/',
+    name: 'frame',
+    component: FrameView,
+    // 子路由: 这些视图都在FrameView即页面框架内的主体部分被渲染
+    children: [
+      {
+        path: 'absent/my',
+        name: 'myabsent',
+        component: MyAbsent,
+      },
+      {
+        path: 'absent/sub',
+        name: 'subabsent',
+        component: SubAbent,
+      },
+    ],
+  },
+  // ...
+]
+```
+
+4. 在框架视图`~/src/views/main/FrameView.vue`中,侧边栏绑定路由链接,在主体部分声明路由出口
+
+```html
+<!-- 首先要给 el-menu 声明,告诉它:你是一个导航菜单 :router="true" -->>
+<!-- 然后给其内部的item声明路由要去的地址(相当于超链接) -->
+<el-menu ...其他属性 :router="true">
+  <el-sub-menu index="1">
+    <template #title>
+      <el-icon><Checked /></el-icon>
+      <span>考勤管理</span>
+    </template>
+    <!-- :route="{ name:'指定的路由名称' }" -->
+    <el-menu-item index="1-1" :route="{ name: 'myabsent' }">
+      <el-icon><Avatar /></el-icon>
+      <span>个人考勤</span>
+    </el-menu-item>
+    <el-menu-item index="1-2" :route="{ name: 'subabsent' }">
+      <el-icon><Finished /></el-icon>
+      <span>下属考勤</span>
+    </el-menu-item>
+  </el-sub-menu>
+</el-menu>
+<!-- ... -->
+<!-- 最后在主体部分声明路由出口,即告诉vue,我点哪个路由,你就找到哪个视图的内容渲染在这里 -->
+<el-main class="main">
+  <router-view></router-view>
+</el-main>
+```
+
+5. 完善和美化一下`FrameView`, 略

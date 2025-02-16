@@ -1,6 +1,6 @@
 <script setup name="frame">
 import { ref, reactive } from 'vue'
-import { Expand, Fold, ArrowDown, UserFilled } from '@element-plus/icons-vue'
+import { Expand, Fold } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -110,54 +110,55 @@ const resetPassword = async () => {
       :collapse="isCollapse"
       default-active="1"
       text-color="#fff"
+      :router="true"
     >
-      <el-menu-item index="1" class="brand">
+      <el-menu-item class="brand">
         <el-icon><HomeFilled /></el-icon>
         <span>
           <router-link :to="{ name: 'frame' }" class="brand-text"> MyOA</router-link>
         </span>
       </el-menu-item>
 
-      <el-sub-menu index="2">
+      <el-sub-menu index="1">
         <template #title>
           <el-icon><Checked /></el-icon>
           <span>考勤管理</span>
         </template>
-        <el-menu-item index="2-1">
+        <el-menu-item index="1-1" :route="{ name: 'myabsent' }">
           <el-icon><Avatar /></el-icon>
           <span>个人考勤</span>
         </el-menu-item>
-        <el-menu-item index="2-2">
+        <el-menu-item index="1-2" :route="{ name: 'subabsent' }">
           <el-icon><Finished /></el-icon>
           <span>下属考勤</span>
         </el-menu-item>
       </el-sub-menu>
 
-      <el-sub-menu index="3">
+      <el-sub-menu index="2">
         <template #title>
           <el-icon><BellFilled /></el-icon>
           <span>通知管理</span>
         </template>
-        <el-menu-item index="3-1">
+        <el-menu-item index="2-1">
           <el-icon><Phone /></el-icon>
           <span>发布通知</span>
         </el-menu-item>
-        <el-menu-item index="3-2">
+        <el-menu-item index="2-2">
           <el-icon><List /></el-icon>
           <span>通知列表</span>
         </el-menu-item>
       </el-sub-menu>
 
-      <el-sub-menu index="4">
+      <el-sub-menu index="3">
         <template #title>
           <el-icon><UserFilled /></el-icon>
           <span>员工管理</span>
         </template>
-        <el-menu-item index="4-1">
+        <el-menu-item index="3-1">
           <el-icon><CirclePlusFilled /></el-icon>
           <span>新增员工</span>
         </el-menu-item>
-        <el-menu-item index="4-2">
+        <el-menu-item index="3-2">
           <el-icon><Memo /></el-icon>
           <span>员工列表</span>
         </el-menu-item>
@@ -179,17 +180,12 @@ const resetPassword = async () => {
         </div>
         <div class="right-header">
           <el-dropdown>
-            <span class="el-dropdown-link">
-              <el-avatar :icon="UserFilled" :size="30" style="margin-right: 8px"></el-avatar>
-              <span>
-                {{ authStore.user.realname }}
-                -
-                <!-- ({{ authStore.user.department.name }}) -->
-                <el-icon class="el-icon--right">
-                  <arrow-down />
-                </el-icon>
-              </span>
-            </span>
+            <el-button>
+              <el-icon><UserFilled /></el-icon>
+              <span>{{ authStore.user.realname }}</span>
+              <span>({{ authStore.user.department.name }})</span>
+              <el-icon><ArrowDownBold /></el-icon>
+            </el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="toggleResetPasswordForm()">修改密码</el-dropdown-item>
@@ -200,7 +196,9 @@ const resetPassword = async () => {
         </div>
       </el-header>
       <!-- 具体内容 -->
-      <el-main class="main">Main</el-main>
+      <el-main class="main">
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-container>
 
@@ -250,9 +248,5 @@ const resetPassword = async () => {
 }
 .el-menu {
   border-right: none;
-}
-.el-dropdown-link {
-  display: flex;
-  align-items: center;
 }
 </style>
