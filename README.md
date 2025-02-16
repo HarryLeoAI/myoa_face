@@ -984,3 +984,53 @@ routes: [
 ```
 
 5. 完善和美化一下`FrameView`, 略
+
+# 新建考勤
+
+> 开发日志已经太长了, 接下来我决定不再在文档内展示源代码, 而是提供思路或者尽量简单的参考代码
+
+### 视图\_setup
+
+1. 采用对话框实现表单,在修改密码部分已经实现过:
+   - `<el-dialog v-model="展示与否" title="对话框标题" width="给对话框指定宽度">`
+   - 里面包`<el-form :model="表单数据" :rules="表单验证规则" ref="用于表单验证的变量">`
+   - 其余的知识点在 4 5 6
+2. 利用生命周期函数获取请假类型和审批人
+   - 导入`onMounted` 并使用, 在组件挂载成功后, 自动请求后台接口, 获得数据.
+   - `~/src/api/absentHttp.js` 封装了 `http.js`, 后者具有极强的参考意义
+   - 在后去审批者部分, 我用了`Object.assign(obj1, obj2)`函数, 该函数将枚举obj2的keys给obj1, obj1有的字段将被赋值为obj2的对应字段.
+3. 表单验证规则配置为一个`reactive`变量.
+   - 规则是`字段名作为reactive对象的属性名: 值为一个数组`
+   - 该数组又包多个对象作为规则:`{规则, 提示信息message, 提示信息显示条件trigger}`
+
+### 视图\_template
+
+4. 遍历请假类型数组, 展示为option
+
+   - 通过`<el-option>`展示数据,它需要指定以下属性
+   - 先要告诉它遍历哪个数组:`v-for="absent_type in absent_types"`
+   - `:label="absent_type.name"` 选项展示在外面的名字
+   - `:value="absent_type.id"` 实际提交出去的值
+   - `:key="absent_type.id"` 使用v-for就建议指定`:key`, 这是Vue底层追踪该元素的标记,有了这个属性 Vue 会极大提高渲染效率
+
+5. 日期选择器 Element-plus.DatePicker
+   - 为了显示中文, 需要汉化, 参考 `main.js` 中使用ElementPlus时, 指定`locale: zhCn`
+   - 通过`<el-date-picker>`展示日期选择器, 该标签可以指定以下属性
+   - `type="daterange"` 将会出现两个时间选择的input
+   - 如果类型是`daterange`,那么`v-model="createAbsentdFormData.date_range"`绑定的这个属性将是一个带有两个时间的数组
+   - `range-separator="到"` 两个时间中间哪个字是
+   - `start-placeholder="起始日期"`, `end-placeholder="结束日期"` 两个input的占位文字
+   - `format="YYYY-MM-DD"` 显示格式
+   - `value-format="YYYY-MM-DD"` 提交表单后,表单内的数据格式
+6. 审批人:只读,禁止修改,值进行条件判断
+   - 这个input标签只展示,只读且不可用,内部展示的值通过条件判断后进行渲染
+   - 需要指定以下属性达成上面的要求:
+   - `:value="responder.realname ? responder.department.name + '-' + responder.realname : '无'"` 值 = 如果responder有realname ? 那么展示审批人的姓名和部分 : 没有则展示'无'
+   - `disabled` 禁用
+   - `readonly="true"` 只读
+
+> 在测试过程中,我发现`LoginView`里邮箱的正则表达式有问题,谷歌邮箱就可以用`.`组成邮箱域名,所以修改正则表达式为`let emailRgx = /^([a-zA-Z0-9._-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9])+/`
+
+### 提交表单
+
+- pass

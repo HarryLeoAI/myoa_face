@@ -16,7 +16,7 @@ let form = reactive({
 const onsubmit = async () => {
   // 配置正则表达式
   let pwdRgx = /^[0-9a-zA-Z_-]{6,24}/
-  let emailRgx = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9])+/
+  let emailRgx = /^([a-zA-Z0-9._-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9])+/
   // 执行验证
   if (!emailRgx.test(form.email)) {
     ElMessage({
