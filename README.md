@@ -1014,6 +1014,7 @@ routes: [
    - `:key="absent_type.id"` 使用v-for就建议指定`:key`, 这是Vue底层追踪该元素的标记,有了这个属性 Vue 会极大提高渲染效率
 
 5. 日期选择器 Element-plus.DatePicker
+
    - 为了显示中文, 需要汉化, 参考 `main.js` 中使用ElementPlus时, 指定`locale: zhCn`
    - 通过`<el-date-picker>`展示日期选择器, 该标签可以指定以下属性
    - `type="daterange"` 将会出现两个时间选择的input
@@ -1022,6 +1023,9 @@ routes: [
    - `start-placeholder="起始日期"`, `end-placeholder="结束日期"` 两个input的占位文字
    - `format="YYYY-MM-DD"` 显示格式
    - `value-format="YYYY-MM-DD"` 提交表单后,表单内的数据格式
+
+   > 有一个小问题忘了说:`</el-form-item>`里面需要直接包`<el-date-picker>`, 而不能在两者之间套一个`div`,(form-item包div包date-picker) 否则会导致表单验证提示显示不正常, 即使选择了时间, 还是显示没有选择时间的错误提示信息.
+
 6. 审批人:只读,禁止修改,值进行条件判断
    - 这个input标签只展示,只读且不可用,内部展示的值通过条件判断后进行渲染
    - 需要指定以下属性达成上面的要求:
@@ -1033,4 +1037,44 @@ routes: [
 
 ### 提交表单
 
-- pass
+- `POST`请求url:`/absent/`, 实现新增考勤数据, 封装在`absentHttp.js`中,函数接收一个参数,就是清理好的数据,函数内配置请求地址,再给`http.post()`传入地址和数据`(path, data)`,对path进行post请求
+- 表单数据验证就是用`ref`定义的数据,调用`.value.validate()`方法,该方法接收一个匿名回调函数,匿名回调函数接收两个参数`(valid, fields)`
+  - 第一个布尔值, 真为数据校验通过
+  - 第二个是错误提示信息对象,可以这样遍历出错误信息
+  ```js
+  for (let key in fields) {
+    ElMessage.error(fields[key][0]['message'])
+  }
+  ```
+
+### 数据展示
+
+- 生命周期函数`onMounted`页面挂载时`GET`请求`/absents/`,即`AbsentViewSet.list`接口
+- 用`absents`接收,在模板遍历
+
+  - 用`<el-table :data="absents">` 进行遍历
+  - 大多数数据通过指定prop属性即可获取(data.prop)`<el-table-column prop="title" label="标题" />`
+  - 审批人永远不变, 且不同通过`absents`即上面的data获取,可以直接展示`responder`
+  - 考勤发起时间格式化:新建`~/src/util/timeFormatter.js`并导入在`MyAbsent.vue`中,然后通过模板匿名插槽进行实现
+
+  ```html
+  <el-table-column label="申请时间">
+    <template #default="scope">
+      <span> {{ timeFormatter.stringFromDateTime(scope.row.create_time) }} </span>
+    </template>
+  </el-table-column>
+  ```
+
+  > 通过`scope.row.propKeyName`即可获取当前行的指定属性值
+
+  - 状态同理,插槽内还可以进行判断,确认渲染的元素
+
+  ```html
+  <el-table-column label="状态">
+    <template #default="scope">
+      <el-tag type="info" v-if="scope.row.status == 1">审核中</el-tag>
+      <el-tag type="success" v-if="scope.row.status == 2">已同意</el-tag>
+      <el-tag type="error" v-if="scope.row.status == 3">已拒绝</el-tag>
+    </template>
+  </el-table-column>
+  ```

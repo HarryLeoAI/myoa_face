@@ -10,4 +10,14 @@ const getResponder = () => {
   return http.get(path)
 }
 
-export default { getAbsentTypes, getResponder }
+const createAbsent = (data) => {
+  const path = 'absent/'
+  return http.post(path, data)
+}
+
+const getMyAbsents = (page = 1) => {
+  const path = 'absent/?who=my&page=' + page
+  return http.get(path)
+}
+
+export default { getAbsentTypes, getResponder, createAbsent, getMyAbsents }

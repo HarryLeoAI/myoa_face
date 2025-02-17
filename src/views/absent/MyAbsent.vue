@@ -3,7 +3,32 @@ import { ref, reactive, onMounted } from 'vue'
 import OAPageHeader from '@/components/OAPageHeader.vue'
 import absentHttp from '@/api/absentHttp'
 import { ElMessage } from 'element-plus'
+import timeFormatter from '@/utils/timeFormatter'
 
+// 获取请假类型和审批者
+let absent_types = ref([])
+let responder = reactive({
+  realname: '',
+  department: {},
+})
+let absents = ref([])
+onMounted(async () => {
+  try {
+    // 获取请假类型
+    let absent_types_data = await absentHttp.getAbsentTypes()
+    absent_types.value = absent_types_data
+
+    // 获取审批者
+    let responder_data = await absentHttp.getResponder()
+    Object.assign(responder, responder_data)
+
+    // 获取个人考勤信息
+    let my_absents = await absentHttp.getMyAbsents()
+    absents.value = my_absents
+  } catch (error) {
+    ElMessage.error(error.detail)
+  }
+})
 /**
  * 发起考勤功能
  */
@@ -19,29 +44,8 @@ const createAbsentdFormData = reactive({
   absent_type_id: null,
   date_range: '',
 })
-
-// 获取请假类型和审批者
-let absent_types = ref([])
-let responder = reactive({
-  realname: '',
-  department: {},
-})
-onMounted(async () => {
-  try {
-    // 获取请假类型
-    let absent_types_data = await absentHttp.getAbsentTypes()
-    absent_types.value = absent_types_data
-
-    // 获取审批者
-    let responder_data = await absentHttp.getResponder()
-    Object.assign(responder, responder_data)
-  } catch (detail) {
-    ElMessage.error(detail)
-  }
-})
-
 // 表单验证规则
-const createAbsentFormrules = reactive({
+const createAbsentFormRules = reactive({
   title: [
     { required: true, message: '请输入标题！', trigger: 'blur' },
     { min: 4, max: 30, message: '请假标题必须在4~30个字之间!', trigger: 'blur' },
@@ -64,11 +68,32 @@ const toggleCreateAbsentForm = () => {
 }
 
 // 提交表单
-const createAbsent = () => {
-  console.log(createAbsentdFormData)
-  dialogFormVisible.value = false
+const createAbsent = async () => {
+  // 验证数据
+  createAbsentdForm.value.validate(async (valid, fields) => {
+    if (valid) {
+      // 处理数据
+      createAbsentdFormData.start_date = createAbsentdFormData.date_range[0]
+      createAbsentdFormData.end_date = createAbsentdFormData.date_range[1]
+      delete createAbsentdFormData.date_range
+      try {
+        await absentHttp.createAbsent(createAbsentdFormData)
+        ElMessage.success('考勤提交成功!')
+        setTimeout(() => {
+          window.location.reload()
+        }, 1500)
+      } catch (detail) {
+        ElMessage.error(detail)
+      }
+      dialogFormVisible.value = false
+    } else {
+      for (let key in fields) {
+        ElMessage.error(fields[key][0]['message'])
+      }
+      return false
+    }
+  })
 }
-
 /**
  * 发起考勤结束
  */
@@ -83,11 +108,46 @@ const createAbsent = () => {
         <span>发起考勤</span>
       </el-button>
     </el-card>
+    <el-card>
+      <el-table :data="absents" style="width: 100%">
+        <el-table-column prop="title" label="标题" />
+        <el-table-column prop="content" label="详情" />
+        <el-table-column prop="absent_type.name" label="类型" />
+        <el-table-column prop="start_date" label="请假日期" />
+        <el-table-column prop="end_date" label="结束日期" />
+        <el-table-column label="审核领导">
+          <span v-if="responder.realname">
+            {{ responder.department.name }}-{{ responder.realname }}
+          </span>
+          <span v-if="!responder.realname">无</span>
+        </el-table-column>
+        <el-table-column label="申请时间">
+          <template #default="scope">
+            <span>
+              {{ timeFormatter.stringFromDateTime(scope.row.create_time) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="审核回复">
+          <template #default="scope">
+            <span v-if="scope.row.response_content">{{ scope.row.response_content }}</span>
+            <span v-if="!scope.row.response_content">无</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态">
+          <template #default="scope">
+            <el-tag type="info" v-if="scope.row.status == 1">审核中</el-tag>
+            <el-tag type="success" v-if="scope.row.status == 2">已同意</el-tag>
+            <el-tag type="error" v-if="scope.row.status == 3">已拒绝</el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
   </el-space>
 
   <!-- 发起考勤对话框 -->
   <el-dialog v-model="dialogFormVisible" title="发起请假" width="500">
-    <el-form :model="createAbsentdFormData" :rules="createAbsentFormrules" ref="createAbsentdForm">
+    <el-form :model="createAbsentdFormData" :rules="createAbsentFormRules" ref="createAbsentdForm">
       <el-form-item label="请假标题" :label-width="formLabelWidth" prop="title">
         <el-input type="text" v-model="createAbsentdFormData.title" />
       </el-form-item>
