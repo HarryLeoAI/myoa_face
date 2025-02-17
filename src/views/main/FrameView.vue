@@ -113,7 +113,9 @@ const resetPassword = async () => {
       :router="true"
     >
       <el-menu-item class="brand">
-        <el-icon><HomeFilled /></el-icon>
+        <router-link :to="{ name: 'frame' }" class="brand-text"
+          ><el-icon><HomeFilled /> </el-icon>
+        </router-link>
         <span>
           <router-link :to="{ name: 'frame' }" class="brand-text"> MyOA</router-link>
         </span>

@@ -102,14 +102,14 @@ const createAbsent = async () => {
 <template>
   <el-space style="width: 100%" direction="vertical" fill="true" :size="15">
     <OAPageHeader content="个人考勤"></OAPageHeader>
-    <el-card style="text-align: right">
+    <el-card style="width: 1000px; text-align: right">
       <el-button type="primary" @click="toggleCreateAbsentForm">
         <el-icon><Plus /></el-icon>
         <span>发起考勤</span>
       </el-button>
     </el-card>
-    <el-card>
-      <el-table :data="absents" style="width: 100%">
+    <el-card style="width: 1000px">
+      <el-table :data="absents">
         <el-table-column prop="title" label="标题" />
         <el-table-column prop="content" label="详情" />
         <el-table-column prop="absent_type.name" label="类型" />
