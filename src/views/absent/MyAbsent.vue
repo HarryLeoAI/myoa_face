@@ -1,17 +1,35 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import OAPageHeader from '@/components/OAPageHeader.vue'
 import absentHttp from '@/api/absentHttp'
 import { ElMessage } from 'element-plus'
 import timeFormatter from '@/utils/timeFormatter'
 
-// 获取请假类型和审批者
+// 请假类型和审批者
 let absent_types = ref([])
 let responder = reactive({
   realname: '',
   department: {},
 })
+// 请假列表
 let absents = ref([])
+// 请假列表分页
+let pagination = reactive({
+  total: 0,
+  page: 1,
+})
+// 封装函数:根据页码获取列表
+const getMyAbsents = async (page) => {
+  try {
+    // 获取个人考勤信息
+    let absentsData = await absentHttp.getMyAbsents(page)
+    console.log(absentsData)
+    absents.value = absentsData.results
+    pagination.total = absentsData.count
+  } catch (detail) {
+    ElMessage.error(detail)
+  }
+}
 onMounted(async () => {
   try {
     // 获取请假类型
@@ -22,13 +40,19 @@ onMounted(async () => {
     let responder_data = await absentHttp.getResponder()
     Object.assign(responder, responder_data)
 
-    // 获取个人考勤信息
-    let my_absents = await absentHttp.getMyAbsents()
-    absents.value = my_absents
+    // 获取考勤列表
+    getMyAbsents(1)
   } catch (error) {
     ElMessage.error(error.detail)
   }
 })
+watch(
+  () => pagination.page,
+  (value) => {
+    // 获取考勤列表
+    getMyAbsents(value)
+  },
+)
 /**
  * 发起考勤功能
  */
@@ -142,6 +166,16 @@ const createAbsent = async () => {
           </template>
         </el-table-column>
       </el-table>
+      <template #footer>
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="pagination.total"
+          :page-size="5"
+          v-model:current-page="pagination.page"
+          style="justify-content: center"
+        />
+      </template>
     </el-card>
   </el-space>
 

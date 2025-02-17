@@ -1078,3 +1078,16 @@ routes: [
     </template>
   </el-table-column>
   ```
+
+### 数据分页
+
+> 前面后端的代码没有分页, `AbentViewst.list` 直接返回所有数据, 现在修改了.
+
+- 修改后,传回来的数据变了, 带有`count`总页数和`results`全部结果,逻辑变成
+- `onMounted`首次挂载获取第1页数据
+- 监听`page`属性,每次`page`变化都请求一次服务器获取新数据并渲染
+- 所以把从服务器获取数据抽离出来,封装成一个单独的函数,分别在`onMounted`和`watch`中调用
+- 模板部分使用`<el-pagination>`渲染分页器, 属性如下
+  - `:total="pagination.total"` 总页数(从服务器返回回来的数据`.count`中获取)
+  - `:page-size="5"` 一页多少条数据, 务必和后端配置保持一致
+  - `v-model:current-page="pagination.page"` 一定要告诉Vue当前的页数
