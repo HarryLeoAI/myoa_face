@@ -1,9 +1,10 @@
 <script setup>
-import OAPageHeader from '@/components/OAPageHeader.vue'
 import { ref, reactive, onMounted, watch } from 'vue'
 import absentHttp from '@/api/absentHttp'
 import { ElMessage } from 'element-plus'
 import timeFormatter from '@/utils/timeFormatter'
+import OAMain from '@/components/OAMain.vue'
+import OAPagination from '@/components/OAPagination.vue'
 
 // 考勤列表
 let absents = ref([])
@@ -41,8 +42,8 @@ watch(
 </script>
 
 <template>
-  <el-space style="width: 100%" direction="vertical" fill="true" :size="15">
-    <OAPageHeader content="下属考勤"></OAPageHeader>
+  <OAMain title="下属考勤">
+    <!-- 默认插槽填充:页面主体 -->
     <el-card style="width: 1000px">
       <el-table :data="absents">
         <el-table-column label="状态" fixed>
@@ -79,26 +80,30 @@ watch(
           </template>
         </el-table-column>
         <el-table-column label="处理" min-width="150" fixed="right">
-          <el-button type="success">
-            <el-icon><Check /></el-icon>
-          </el-button>
-          <el-button type="danger">
-            <el-icon><Close /></el-icon>
-          </el-button>
+          <template #default="scope">
+            <div v-if="scope.row.status != 2">
+              <el-tooltip content="同意" placement="top" effect="light">
+                <el-button type="success">
+                  <el-icon><Check /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip content="拒绝" placement="top" effect="light">
+                <el-button type="danger">
+                  <el-icon><Close /></el-icon>
+                </el-button>
+              </el-tooltip>
+            </div>
+            <div v-if="scope.row.status == 2">
+              <el-button type="info" disabled>已处理</el-button>
+            </div>
+          </template>
         </el-table-column>
       </el-table>
       <template #footer>
-        <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="pagination.total"
-          :page-size="5"
-          v-model:current-page="pagination.page"
-          style="justify-content: center"
-        />
+        <OAPagination :page_size="5" :total="pagination.total" v-model="pagination.page" />
       </template>
     </el-card>
-  </el-space>
+  </OAMain>
 </template>
 
 <style scoped></style>

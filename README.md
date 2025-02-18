@@ -1096,7 +1096,79 @@ routes: [
 
 - 获取下属考勤数据`getSubAbsents()`写在`~/src/api/absentHttp.js`中, 也就是path改变了
 - 视图`~/src/views/SubAbsent.vue`和`MyAbsnet`大差不差.
-- 模板上,通过给`<el-table-column>`指定宽度, 同时给首位列指定`fiexd`, `fixed="right"`属性, 实现表格总宽度锁定, 首位列不动.
+- 模板上,通过`<el-table>`指定总宽度,再分别给`<el-table-column>`指定宽度, 同时给首位列指定`fiexd`, `fixed="right"`属性, 实现表格总宽度锁定, 首位列不动.
   > 修修补补页面, 使其更加美观
+- 模板上,通过`<el-tooltip>`来实现带提示信息的按钮
+
+```html
+<!-- content="提示内容" plecement="提示信息出现位置" effect="样式要么light, 要么dark" -->
+<el-tooltip content="同意" placement="top" effect="light">
+  <el-button type="success">
+    <el-icon><Check /></el-icon>
+  </el-button>
+</el-tooltip>
+```
 
 ### 封装重复代码
+
+- 抽取重复代码封装为组件 `~/src/components/`
+  - 主体`OAMain.vue`
+  - 分页`OAPagination.vue`
+  - 表单对话框`OADialog.vue`
+- 以`OADialog`为典型案例: 其需要变化的只有:1标题, 2表单, 3提交事件
+
+```vue
+<script setup>
+import { defineProps, defineModel, defineEmits } from 'vue'
+
+// 定义v-model: 是否展示对话框, 由外面决定所以要用 v-model进行绑定
+let dialogVisible = defineModel({ required: true })
+
+// 定义props: 由外面传入参数
+let props = defineProps({
+  title: {
+    type: String,
+    default: '',
+  },
+  width: {
+    type: String,
+    default: '500',
+  },
+})
+
+// 定义事件
+const emits = defineEmits(['cancel', 'submit'])
+
+// 定义内部函数
+const onCancel = () => {
+  // 当调用内部的 onCancel() 函数时候, 先将对话框隐藏
+  dialogVisible.value = false
+  // 再执行外部通过 @cancel="指定函数" 指定的函数
+  emits('cancel')
+}
+
+const onSubmit = () => {
+  // @submit="调用父组件指定的函数"
+  emits('submit')
+}
+</script>
+
+<template>
+  <el-dialog v-model="dialogVisible" :title="props.title" :width="props.width">
+    <!-- 声明匿名默认插槽,待外部填充 -->
+    <slot></slot>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="onCancel"> 返回 </el-button>
+        <el-button type="primary" @click="onSubmit"> 确认 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+
+<style scoped></style>
+```
+
+- 在父组件调用该组件:
+  1. `<script>`中引用: `import OADialog from '@/components/OADialog.vue'`
+  2. `<template>`中填充内容,并且传参: `<OADialog v-model="dialogFormVisible" title="发起考勤" @submit="createAbsent">`

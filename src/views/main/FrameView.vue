@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import authHttp from '@/api/authHttp'
+import OADialog from '@/components/OADialog.vue'
 
 let authStore = useAuthStore()
 let router = useRouter()
@@ -205,7 +206,7 @@ const resetPassword = async () => {
   </el-container>
 
   <!-- 修改密码对话框表单 -->
-  <el-dialog v-model="dialogFormVisible" title="修改密码" width="500">
+  <OADialog v-model="dialogFormVisible" title="修改密码" @submit="resetPassword">
     <el-form :model="resetPasswordFormData" :rules="resetPasswordFormRules" ref="resetPasswordForm">
       <el-form-item label="旧密码" :label-width="formLabelWidth" prop="old_password">
         <el-input type="password" v-model="resetPasswordFormData.old_password" />
@@ -217,13 +218,7 @@ const resetPassword = async () => {
         <el-input type="password" v-model="resetPasswordFormData.check_new_password" />
       </el-form-item>
     </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false"> 返回 </el-button>
-        <el-button type="primary" @click="resetPassword"> 确认 </el-button>
-      </div>
-    </template>
-  </el-dialog>
+  </OADialog>
 </template>
 
 <style scoped>

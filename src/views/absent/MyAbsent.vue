@@ -1,9 +1,11 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
-import OAPageHeader from '@/components/OAPageHeader.vue'
 import absentHttp from '@/api/absentHttp'
 import { ElMessage } from 'element-plus'
 import timeFormatter from '@/utils/timeFormatter'
+import OAMain from '@/components/OAMain.vue'
+import OAPagination from '@/components/OAPagination.vue'
+import OADialog from '@/components/OADialog.vue'
 
 // 请假类型和审批者
 let absent_types = ref([])
@@ -100,11 +102,9 @@ const createAbsent = async () => {
       createAbsentdFormData.end_date = createAbsentdFormData.date_range[1]
       delete createAbsentdFormData.date_range
       try {
-        await absentHttp.createAbsent(createAbsentdFormData)
+        let absent = await absentHttp.createAbsent(createAbsentdFormData)
         ElMessage.success('考勤提交成功!')
-        setTimeout(() => {
-          window.location.reload()
-        }, 1500)
+        absents.value.unshift(absent)
       } catch (detail) {
         ElMessage.error(detail)
       }
@@ -123,8 +123,8 @@ const createAbsent = async () => {
 </script>
 
 <template>
-  <el-space style="width: 100%" direction="vertical" fill="true" :size="15">
-    <OAPageHeader content="个人考勤"></OAPageHeader>
+  <!-- 默认插槽填充:页面主体 -->
+  <OAMain title="个人考勤">
     <el-card style="width: 1000px; text-align: right">
       <el-button type="primary" @click="toggleCreateAbsentForm">
         <el-icon><Plus /></el-icon>
@@ -166,20 +166,13 @@ const createAbsent = async () => {
         </el-table-column>
       </el-table>
       <template #footer>
-        <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="pagination.total"
-          :page-size="5"
-          v-model:current-page="pagination.page"
-          style="justify-content: center"
-        />
+        <OAPagination :page_size="5" :total="pagination.total" v-model="pagination.page" />
       </template>
     </el-card>
-  </el-space>
+  </OAMain>
 
   <!-- 发起考勤对话框 -->
-  <el-dialog v-model="dialogFormVisible" title="发起请假" width="500">
+  <OADialog v-model="dialogFormVisible" title="发起考勤" @submit="createAbsent">
     <el-form :model="createAbsentdFormData" :rules="createAbsentFormRules" ref="createAbsentdForm">
       <el-form-item label="请假标题" :label-width="formLabelWidth" prop="title">
         <el-input type="text" v-model="createAbsentdFormData.title" />
@@ -223,13 +216,7 @@ const createAbsent = async () => {
         />
       </el-form-item>
     </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false"> 返回 </el-button>
-        <el-button type="primary" @click="createAbsent"> 确认 </el-button>
-      </div>
-    </template>
-  </el-dialog>
+  </OADialog>
 </template>
 
 <style scoped></style>
