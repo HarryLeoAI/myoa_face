@@ -20,4 +20,9 @@ const getMyAbsents = (page = 1) => {
   return http.get(path)
 }
 
-export default { getAbsentTypes, getResponder, createAbsent, getMyAbsents }
+const getSubAbsents = (page = 1) => {
+  const path = 'absent/?who=sub&page=' + page
+  return http.get(path)
+}
+
+export default { getAbsentTypes, getResponder, createAbsent, getMyAbsents, getSubAbsents }

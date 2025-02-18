@@ -1091,3 +1091,12 @@ routes: [
   - `:total="pagination.total"` 总页数(从服务器返回回来的数据`.count`中获取)
   - `:page-size="5"` 一页多少条数据, 务必和后端配置保持一致
   - `v-model:current-page="pagination.page"` 一定要告诉Vue当前的页数
+
+### 下属考勤页面
+
+- 获取下属考勤数据`getSubAbsents()`写在`~/src/api/absentHttp.js`中, 也就是path改变了
+- 视图`~/src/views/SubAbsent.vue`和`MyAbsnet`大差不差.
+- 模板上,通过给`<el-table-column>`指定宽度, 同时给首位列指定`fiexd`, `fixed="right"`属性, 实现表格总宽度锁定, 首位列不动.
+  > 修修补补页面, 使其更加美观
+
+### 封装重复代码

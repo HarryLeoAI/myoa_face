@@ -23,7 +23,6 @@ const getMyAbsents = async (page) => {
   try {
     // 获取个人考勤信息
     let absentsData = await absentHttp.getMyAbsents(page)
-    console.log(absentsData)
     absents.value = absentsData.results
     pagination.total = absentsData.count
   } catch (detail) {
@@ -134,36 +133,36 @@ const createAbsent = async () => {
     </el-card>
     <el-card style="width: 1000px">
       <el-table :data="absents">
-        <el-table-column prop="title" label="标题" />
-        <el-table-column prop="content" label="详情" />
-        <el-table-column prop="absent_type.name" label="类型" />
-        <el-table-column prop="start_date" label="请假日期" />
-        <el-table-column prop="end_date" label="结束日期" />
-        <el-table-column label="审核领导">
-          <span v-if="responder.realname">
-            {{ responder.department.name }}-{{ responder.realname }}
-          </span>
-          <span v-if="!responder.realname">无</span>
+        <el-table-column label="状态" fixed>
+          <template #default="scope">
+            <el-tag type="info" v-if="scope.row.status == 1">审核中</el-tag>
+            <el-tag type="success" v-if="scope.row.status == 2">已同意</el-tag>
+            <el-tag type="error" v-if="scope.row.status == 3">已拒绝</el-tag>
+          </template>
         </el-table-column>
-        <el-table-column label="申请时间">
+        <el-table-column prop="absent_type.name" label="类型" width="70" />
+        <el-table-column prop="title" label="标题" width="100" />
+        <el-table-column prop="content" label="详情" width="260" />
+        <el-table-column prop="start_date" label="请假日期" width="110" />
+        <el-table-column prop="end_date" label="结束日期" width="110" />
+        <el-table-column label="申请时间" width="170">
           <template #default="scope">
             <span>
               {{ timeFormatter.stringFromDateTime(scope.row.create_time) }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="审核回复">
+        <el-table-column label="审核回复" width="260">
           <template #default="scope">
             <span v-if="scope.row.response_content">{{ scope.row.response_content }}</span>
             <span v-if="!scope.row.response_content">无</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态">
-          <template #default="scope">
-            <el-tag type="info" v-if="scope.row.status == 1">审核中</el-tag>
-            <el-tag type="success" v-if="scope.row.status == 2">已同意</el-tag>
-            <el-tag type="error" v-if="scope.row.status == 3">已拒绝</el-tag>
-          </template>
+        <el-table-column label="审核领导" min-width="150" fixed="right">
+          <span v-if="responder.realname">
+            {{ responder.department.name }}-{{ responder.realname }}
+          </span>
+          <span v-if="!responder.realname">您就是老板</span>
         </el-table-column>
       </el-table>
       <template #footer>
