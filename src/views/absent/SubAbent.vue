@@ -9,16 +9,22 @@ import OADialog from '@/components/OADialog.vue'
 
 // 考勤列表
 let absents = ref([])
+// 状态
+let status = ref(false)
+const changeStatus = (statusCode) => {
+  status.value = statusCode
+}
 // 分页
 let pagination = reactive({
   total: 0,
   page: 1,
 })
+
 // 根据页码获取列表
 const getSubAbsents = async (page) => {
   try {
     // 获取下属考勤信息
-    let absentsData = await absentHttp.getSubAbsents(page)
+    let absentsData = await absentHttp.getSubAbsents(page, status.value)
     absents.value = absentsData.results
     pagination.total = absentsData.count
   } catch (detail) {
@@ -34,10 +40,10 @@ onMounted(async () => {
   }
 })
 watch(
-  () => pagination.page,
-  (value) => {
+  () => [pagination.page, status.value],
+  ([newPage, newStatus]) => {
     // 获取下属考勤列表
-    getSubAbsents(value)
+    getSubAbsents(newPage, newStatus)
   },
 )
 
@@ -102,7 +108,21 @@ const handleAbsent = () => {
 
 <template>
   <OAMain title="下属考勤">
-    <!-- 默认插槽填充:页面主体 -->
+    <el-card style="width: 1000px; text-align: right">
+      <el-button type="info" @click="changeStatus(1)">
+        <el-icon><Filter /></el-icon>
+        <span>待审核</span>
+      </el-button>
+      <el-button type="success" @click="changeStatus(2)">
+        <el-icon><Filter /></el-icon>
+        <span>已同意</span>
+      </el-button>
+      <el-button type="danger" @click="changeStatus(3)">
+        <el-icon><Filter /></el-icon>
+        <span>已拒绝</span>
+      </el-button>
+    </el-card>
+
     <el-card style="width: 1000px">
       <el-table :data="absents">
         <el-table-column label="状态" fixed>

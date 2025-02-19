@@ -15,13 +15,23 @@ const createAbsent = (data) => {
   return http.post(path, data)
 }
 
-const getMyAbsents = (page = 1) => {
-  const path = 'absent/?who=my&page=' + page
+const getMyAbsents = (page = 1, status = false) => {
+  let path = ''
+  if (status) {
+    path = `absent/?who=my&page=${page}&status=${status}`
+  } else {
+    path = `absent/?who=my&page=${page}`
+  }
   return http.get(path)
 }
 
-const getSubAbsents = (page = 1) => {
-  const path = 'absent/?who=sub&page=' + page
+const getSubAbsents = (page = 1, status = false) => {
+  let path = ''
+  if (status) {
+    path = `absent/?who=sub&page=${page}&status=${status}`
+  } else {
+    path = `absent/?who=sub&page=${page}`
+  }
   return http.get(path)
 }
 

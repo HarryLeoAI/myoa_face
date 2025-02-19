@@ -20,11 +20,16 @@ let pagination = reactive({
   total: 0,
   page: 1,
 })
+// 状态
+let status = ref(false)
+const changeStatus = (statusCode) => {
+  status.value = statusCode
+}
 // 封装函数:根据页码获取列表
 const getMyAbsents = async (page) => {
   try {
     // 获取个人考勤信息
-    let absentsData = await absentHttp.getMyAbsents(page)
+    let absentsData = await absentHttp.getMyAbsents(page, status.value)
     absents.value = absentsData.results
     pagination.total = absentsData.count
   } catch (detail) {
@@ -48,10 +53,10 @@ onMounted(async () => {
   }
 })
 watch(
-  () => pagination.page,
-  (value) => {
+  () => [pagination.page, status.value],
+  ([newPage, newStatus]) => {
     // 获取考勤列表
-    getMyAbsents(value)
+    getMyAbsents(newPage, newStatus)
   },
 )
 /**
@@ -122,14 +127,38 @@ const createAbsent = async () => {
 </script>
 
 <template>
-  <!-- 默认插槽填充:页面主体 -->
   <OAMain title="个人考勤">
-    <el-card style="width: 1000px; text-align: right">
-      <el-button type="primary" @click="toggleCreateAbsentForm">
-        <el-icon><Plus /></el-icon>
-        <span>发起考勤</span>
-      </el-button>
+    <el-card style="width: 1000px">
+      <div class="header-box">
+        <div>
+          <el-button type="primary" @click="toggleCreateAbsentForm">
+            <el-icon><Plus /></el-icon>
+            <span>发起考勤</span>
+          </el-button>
+        </div>
+        <div v-if="responder.realname">
+          <el-button type="info" @click="changeStatus(1)">
+            <el-icon><Filter /></el-icon>
+            <span>待审核</span>
+          </el-button>
+          <el-button type="success" @click="changeStatus(2)">
+            <el-icon><Filter /></el-icon>
+            <span>已同意</span>
+          </el-button>
+          <el-button type="danger" @click="changeStatus(3)">
+            <el-icon><Filter /></el-icon>
+            <span>已拒绝</span>
+          </el-button>
+        </div>
+        <div v-if="!responder.realname">
+          <el-button type="success" @click="changeStatus(2)" disabled>
+            <el-icon><Check /></el-icon>
+            <span>因为您是老板, 所以考勤自动通过</span>
+          </el-button>
+        </div>
+      </div>
     </el-card>
+
     <el-card style="width: 1000px">
       <el-table :data="absents">
         <el-table-column label="状态" fixed>
@@ -211,10 +240,12 @@ const createAbsent = async () => {
           resize="none"
         />
       </el-form-item>
-      <el-form-item label="审批领导" prop="">
+      <el-form-item label="- 审批领导" prop="">
         <el-input
           type="text"
-          :value="responder.realname ? responder.department.name + '-' + responder.realname : '无'"
+          :value="
+            responder.realname ? responder.department.name + '-' + responder.realname : '您就是老板'
+          "
           disabled
           readonly="true"
         />
@@ -223,4 +254,9 @@ const createAbsent = async () => {
   </OADialog>
 </template>
 
-<style scoped></style>
+<style scoped>
+.header-box {
+  display: flex;
+  justify-content: space-between;
+}
+</style>
