@@ -138,6 +138,10 @@ const createAbsent = async () => {
           </el-button>
         </div>
         <div v-show="responder.realname">
+          <el-button type="primary" plain @click="changeStatus(false)">
+            <el-icon><List /></el-icon>
+            <span>全部</span>
+          </el-button>
           <el-button type="info" @click="changeStatus(1)">
             <el-icon><Filter /></el-icon>
             <span>待审核</span>
