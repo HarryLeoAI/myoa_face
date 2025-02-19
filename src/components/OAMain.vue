@@ -9,7 +9,7 @@ let props = defineProps({
 </script>
 
 <template>
-  <el-space style="width: 100%" direction="vertical" fill="true" :size="15">
+  <el-space style="width: 100%" direction="vertical" :fill="true" :size="15">
     <OAPageHeader :content="props.title"></OAPageHeader>
 
     <!-- 待填充的默认插槽 -->
