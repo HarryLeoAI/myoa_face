@@ -1194,3 +1194,28 @@ const onSubmit = () => {
 > `await absentHttp.requestHandleAbsent(absentId, handleAbsentFormData)` 即可
 
 > 2是, django 框架不作任何配置, 所有的url都必须以`/`结尾, 所以 `absent/${id}/` 最后也要有个'撇'
+
+### 考勤列表状态筛选
+
+1. 后端根据路由地址里的参数params中的`who`进行首次筛选后,对结果直接进行二次筛选,同样根据路由地址里的`status`
+2. 整合并完善前端函数, 将`getMyAbsents`和`getSubAbsents`两个函数合并为一个函数
+
+```js
+const requestAbsents = (who = 'my', page = 1, status = false) => {
+  let path = ''
+  if (status) {
+    path = `absent/?who=${who}&page=${page}&status=${status}`
+  } else {
+    path = `absent/?who=${who}&page=${page}`
+  }
+  return http.get(path)
+}
+```
+
+> 通过配置参数默认值, 实现 `status` 非必传参数的功能
+
+3. 前端增加按钮, 略
+
+> 踩到一个坑, 想设置`<el-card>`中的元素两端对齐, 直接写style没用, 索性给里面再写个div, div包两个子div, 给父div设置样式`display: flex; justify-content: space-between;`
+
+4. 又一个坑, 不能直接在`<el-tag>`上面加判断, Vue会给出警告(虽然不影响正常运行),为此只有外面套一个`<span>`对其进行`v-show`判断

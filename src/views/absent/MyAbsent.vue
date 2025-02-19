@@ -23,13 +23,14 @@ let pagination = reactive({
 // 状态
 let status = ref(false)
 const changeStatus = (statusCode) => {
+  pagination.page = 1
   status.value = statusCode
 }
 // 封装函数:根据页码获取列表
-const getMyAbsents = async (page) => {
+const getMyAbsents = async () => {
   try {
     // 获取个人考勤信息
-    let absentsData = await absentHttp.getMyAbsents(page, status.value)
+    let absentsData = await absentHttp.requestAbsents('my', pagination.page, status.value)
     absents.value = absentsData.results
     pagination.total = absentsData.count
   } catch (detail) {
@@ -136,7 +137,7 @@ const createAbsent = async () => {
             <span>发起考勤</span>
           </el-button>
         </div>
-        <div v-if="responder.realname">
+        <div v-show="responder.realname">
           <el-button type="info" @click="changeStatus(1)">
             <el-icon><Filter /></el-icon>
             <span>待审核</span>
@@ -150,7 +151,7 @@ const createAbsent = async () => {
             <span>已拒绝</span>
           </el-button>
         </div>
-        <div v-if="!responder.realname">
+        <div v-show="!responder.realname">
           <el-button type="success" @click="changeStatus(2)" disabled>
             <el-icon><Check /></el-icon>
             <span>因为您是老板, 所以考勤自动通过</span>
@@ -163,9 +164,15 @@ const createAbsent = async () => {
       <el-table :data="absents">
         <el-table-column label="状态" fixed>
           <template #default="scope">
-            <el-tag type="info" v-if="scope.row.status == 1">审核中</el-tag>
-            <el-tag type="success" v-if="scope.row.status == 2">已同意</el-tag>
-            <el-tag type="error" v-if="scope.row.status == 3">已拒绝</el-tag>
+            <span v-show="scope.row.status == 1">
+              <el-tag type="info">审核中</el-tag>
+            </span>
+            <span v-show="scope.row.status == 2">
+              <el-tag type="success">已同意</el-tag>
+            </span>
+            <span v-show="scope.row.status == 3">
+              <el-tag type="danger">已拒绝</el-tag>
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="absent_type.name" label="类型" width="70" />
@@ -182,15 +189,15 @@ const createAbsent = async () => {
         </el-table-column>
         <el-table-column label="审核回复" width="260">
           <template #default="scope">
-            <span v-if="scope.row.response_content">{{ scope.row.response_content }}</span>
-            <span v-if="!scope.row.response_content">无</span>
+            <span v-show="scope.row.response_content">{{ scope.row.response_content }}</span>
+            <span v-show="!scope.row.response_content">无</span>
           </template>
         </el-table-column>
         <el-table-column label="审核领导" min-width="150" fixed="right">
-          <span v-if="responder.realname">
+          <span v-show="responder.realname">
             {{ responder.department.name }}-{{ responder.realname }}
           </span>
-          <span v-if="!responder.realname">您就是老板</span>
+          <span v-show="!responder.realname">您就是老板</span>
         </el-table-column>
       </el-table>
       <template #footer>

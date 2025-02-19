@@ -15,22 +15,12 @@ const createAbsent = (data) => {
   return http.post(path, data)
 }
 
-const getMyAbsents = (page = 1, status = false) => {
+const requestAbsents = (who = 'my', page = 1, status = false) => {
   let path = ''
   if (status) {
-    path = `absent/?who=my&page=${page}&status=${status}`
+    path = `absent/?who=${who}&page=${page}&status=${status}`
   } else {
-    path = `absent/?who=my&page=${page}`
-  }
-  return http.get(path)
-}
-
-const getSubAbsents = (page = 1, status = false) => {
-  let path = ''
-  if (status) {
-    path = `absent/?who=sub&page=${page}&status=${status}`
-  } else {
-    path = `absent/?who=sub&page=${page}`
+    path = `absent/?who=${who}&page=${page}`
   }
   return http.get(path)
 }
@@ -44,7 +34,6 @@ export default {
   getAbsentTypes,
   getResponder,
   createAbsent,
-  getMyAbsents,
-  getSubAbsents,
   requestHandleAbsent,
+  requestAbsents,
 }

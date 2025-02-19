@@ -7,13 +7,14 @@ import OAMain from '@/components/OAMain.vue'
 import OAPagination from '@/components/OAPagination.vue'
 import OADialog from '@/components/OADialog.vue'
 
-// 考勤列表
-let absents = ref([])
 // 状态
 let status = ref(false)
 const changeStatus = (statusCode) => {
+  pagination.page = 1
   status.value = statusCode
 }
+// 考勤列表
+let absents = ref([])
 // 分页
 let pagination = reactive({
   total: 0,
@@ -21,33 +22,37 @@ let pagination = reactive({
 })
 
 // 根据页码获取列表
-const getSubAbsents = async (page) => {
+const getSubAbsents = async () => {
   try {
     // 获取下属考勤信息
-    let absentsData = await absentHttp.getSubAbsents(page, status.value)
+    let absentsData = await absentHttp.requestAbsents('sub', pagination.page, status.value)
     absents.value = absentsData.results
     pagination.total = absentsData.count
   } catch (detail) {
     ElMessage.error(detail)
   }
 }
+
 onMounted(async () => {
   try {
     // 获取下属考勤列表
     getSubAbsents(1)
   } catch (error) {
-    ElMessage.error(error.detail)
+    ElMessage.error(error)
   }
 })
+
 watch(
   () => [pagination.page, status.value],
   ([newPage, newStatus]) => {
-    // 获取下属考勤列表
+    // 获取考勤列表
     getSubAbsents(newPage, newStatus)
   },
 )
 
-// 处理考勤
+/**
+ * 考勤处理功能
+ */
 let dialogFormVisible = ref(false)
 let labelName = ref('')
 let fromTitle = ref('')
@@ -127,9 +132,15 @@ const handleAbsent = () => {
       <el-table :data="absents">
         <el-table-column label="状态" fixed>
           <template #default="scope">
-            <el-tag type="info" v-if="scope.row.status == 1">审核中</el-tag>
-            <el-tag type="success" v-if="scope.row.status == 2">已同意</el-tag>
-            <el-tag type="error" v-if="scope.row.status == 3">已拒绝</el-tag>
+            <span v-show="scope.row.status == 1">
+              <el-tag type="info">审核中</el-tag>
+            </span>
+            <span v-show="scope.row.status == 2">
+              <el-tag type="success">已同意</el-tag>
+            </span>
+            <span v-show="scope.row.status == 3">
+              <el-tag type="danger">已拒绝</el-tag>
+            </span>
           </template>
         </el-table-column>
 
@@ -154,13 +165,13 @@ const handleAbsent = () => {
         </el-table-column>
         <el-table-column label="审核回复" width="260">
           <template #default="scope">
-            <span v-if="scope.row.response_content">{{ scope.row.response_content }}</span>
-            <span v-if="!scope.row.response_content">无</span>
+            <span v-show="scope.row.response_content">{{ scope.row.response_content }}</span>
+            <span v-show="!scope.row.response_content">无</span>
           </template>
         </el-table-column>
         <el-table-column label="处理" min-width="150" fixed="right">
           <template #default="scope">
-            <div v-if="scope.row.status == 1">
+            <div v-show="scope.row.status == 1">
               <el-tooltip content="同意" placement="top" effect="light">
                 <el-button type="success" @click="agreeAbsent(scope.row.id)">
                   <el-icon><Check /></el-icon>
@@ -172,10 +183,10 @@ const handleAbsent = () => {
                 </el-button>
               </el-tooltip>
             </div>
-            <div v-if="scope.row.status == 2">
+            <div v-show="scope.row.status == 2">
               <el-button type="success" disabled style="width: 103px">已处理</el-button>
             </div>
-            <div v-if="scope.row.status == 3">
+            <div v-show="scope.row.status == 3">
               <el-button type="danger" disabled style="width: 103px">已拒绝</el-button>
             </div>
           </template>
