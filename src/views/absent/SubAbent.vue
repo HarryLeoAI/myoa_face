@@ -153,10 +153,10 @@ const handleAbsent = () => {
               </el-tooltip>
             </div>
             <div v-if="scope.row.status == 2">
-              <el-button type="info" disabled>已处理</el-button>
+              <el-button type="success" disabled style="width: 103px">已处理</el-button>
             </div>
             <div v-if="scope.row.status == 3">
-              <el-button type="danger" disabled>已拒绝</el-button>
+              <el-button type="danger" disabled style="width: 103px">已拒绝</el-button>
             </div>
           </template>
         </el-table-column>
