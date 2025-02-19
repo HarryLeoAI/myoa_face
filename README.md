@@ -1219,3 +1219,5 @@ const requestAbsents = (who = 'my', page = 1, status = false) => {
 > 踩到一个坑, 想设置`<el-card>`中的元素两端对齐, 直接写style没用, 索性给里面再写个div, div包两个子div, 给父div设置样式`display: flex; justify-content: space-between;`
 
 4. 又一个坑, 不能直接在`<el-tag>`上面加判断, Vue会给出警告(虽然不影响正常运行),为此只有外面套一个`<span>`对其进行`v-show`判断
+
+5. 还有一个坑, 查询所有状态下的考勤, 列表返回2页数据, 换到第二页, 再点击筛选器, 哦豁! 页码不可用, 所以每次换页的时候, `page=1` 从第1页开始
