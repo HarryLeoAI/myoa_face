@@ -1172,3 +1172,25 @@ const onSubmit = () => {
 - 在父组件调用该组件:
   1. `<script>`中引用: `import OADialog from '@/components/OADialog.vue'`
   2. `<template>`中填充内容,并且传参: `<OADialog v-model="dialogFormVisible" title="发起考勤" @submit="createAbsent">`
+
+### 考勤处理
+
+1. 搞个对话框包表单
+2. 点击"同意" / "拒绝" 打开表单,同时做以下事情:
+   - 将当前循环到的数据的id传进来
+   - 根据"同意"/"拒绝"赋予不同的status值(1审核2同意3拒绝)
+   - 根据"同意"/"拒绝"展示不同的标题以及不同的label上的字
+3. 提交按钮绑定函数, 访问`absentHttp.requestHandleAbsent(id, data)`方法
+   - 以`PUT`请求DRF视图集API时候, URL里必须要有id:`.../absent/id/`
+   - 所以该方法内要拼接path : `` const path = `absent/${id}/` ``
+   - 请求成功,刷新页面
+   ```js
+   setTimeout(() => {
+     window.location.reload()
+   }, 1000)
+   ```
+
+> 两个坑, 1是以`reactive()`定义的数据, 在`<script>`标签里访问,也不用`.value`, 所以作为参数传递时:
+> `await absentHttp.requestHandleAbsent(absentId, handleAbsentFormData)` 即可
+
+> 2是, django 框架不作任何配置, 所有的url都必须以`/`结尾, 所以 `absent/${id}/` 最后也要有个'撇'

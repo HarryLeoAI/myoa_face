@@ -58,7 +58,6 @@ watch(
  * 发起考勤功能
  */
 //  表单样式配置
-const formLabelWidth = '80px'
 let dialogFormVisible = ref(false)
 
 // 表单数据初始化
@@ -173,11 +172,16 @@ const createAbsent = async () => {
 
   <!-- 发起考勤对话框 -->
   <OADialog v-model="dialogFormVisible" title="发起考勤" @submit="createAbsent">
-    <el-form :model="createAbsentdFormData" :rules="createAbsentFormRules" ref="createAbsentdForm">
-      <el-form-item label="请假标题" :label-width="formLabelWidth" prop="title">
+    <el-form
+      :model="createAbsentdFormData"
+      :rules="createAbsentFormRules"
+      ref="createAbsentdForm"
+      leble-width="80px"
+    >
+      <el-form-item label="请假标题" prop="title">
         <el-input type="text" v-model="createAbsentdFormData.title" />
       </el-form-item>
-      <el-form-item label="请假类型" :label-width="formLabelWidth" prop="absent_type_id">
+      <el-form-item label="请假类型" prop="absent_type_id">
         <el-select v-model="createAbsentdFormData.absent_type_id">
           <el-option
             v-for="absent_type in absent_types"
@@ -187,7 +191,7 @@ const createAbsent = async () => {
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="请假时间" :label-width="formLabelWidth" prop="date_range">
+      <el-form-item label="请假时间" prop="date_range">
         <el-date-picker
           v-model="createAbsentdFormData.date_range"
           type="daterange"
@@ -198,7 +202,7 @@ const createAbsent = async () => {
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
-      <el-form-item label="请假内容" :label-width="formLabelWidth" prop="content">
+      <el-form-item label="请假内容" prop="content">
         <el-input
           type="textarea"
           v-model="createAbsentdFormData.content"
@@ -207,7 +211,7 @@ const createAbsent = async () => {
           resize="none"
         />
       </el-form-item>
-      <el-form-item label="审批领导" :label-width="formLabelWidth" prop="">
+      <el-form-item label="审批领导" prop="">
         <el-input
           type="text"
           :value="responder.realname ? responder.department.name + '-' + responder.realname : '无'"

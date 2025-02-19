@@ -25,4 +25,16 @@ const getSubAbsents = (page = 1) => {
   return http.get(path)
 }
 
-export default { getAbsentTypes, getResponder, createAbsent, getMyAbsents, getSubAbsents }
+const requestHandleAbsent = (id, data) => {
+  const path = `absent/${id}/`
+  return http.put(path, data)
+}
+
+export default {
+  getAbsentTypes,
+  getResponder,
+  createAbsent,
+  getMyAbsents,
+  getSubAbsents,
+  requestHandleAbsent,
+}

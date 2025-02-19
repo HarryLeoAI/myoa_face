@@ -40,7 +40,6 @@ const logout = () => {
 /**
  * 密码修改
  */
-const formLabelWidth = '80px'
 let dialogFormVisible = ref(false)
 let resetPasswordForm = ref()
 
@@ -207,14 +206,19 @@ const resetPassword = async () => {
 
   <!-- 修改密码对话框表单 -->
   <OADialog v-model="dialogFormVisible" title="修改密码" @submit="resetPassword">
-    <el-form :model="resetPasswordFormData" :rules="resetPasswordFormRules" ref="resetPasswordForm">
-      <el-form-item label="旧密码" :label-width="formLabelWidth" prop="old_password">
+    <el-form
+      :model="resetPasswordFormData"
+      :rules="resetPasswordFormRules"
+      ref="resetPasswordForm"
+      leble-width="80px"
+    >
+      <el-form-item label="旧密码" prop="old_password">
         <el-input type="password" v-model="resetPasswordFormData.old_password" />
       </el-form-item>
-      <el-form-item label="新的密码" :label-width="formLabelWidth" prop="new_password">
+      <el-form-item label="新的密码" prop="new_password">
         <el-input type="password" v-model="resetPasswordFormData.new_password" />
       </el-form-item>
-      <el-form-item label="再输一次" :label-width="formLabelWidth" prop="check_new_password">
+      <el-form-item label="再输一次" prop="check_new_password">
         <el-input type="password" v-model="resetPasswordFormData.check_new_password" />
       </el-form-item>
     </el-form>

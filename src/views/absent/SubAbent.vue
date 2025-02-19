@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 import timeFormatter from '@/utils/timeFormatter'
 import OAMain from '@/components/OAMain.vue'
 import OAPagination from '@/components/OAPagination.vue'
+import OADialog from '@/components/OADialog.vue'
 
 // 考勤列表
 let absents = ref([])
@@ -39,6 +40,64 @@ watch(
     getSubAbsents(value)
   },
 )
+
+// 处理考勤
+let dialogFormVisible = ref(false)
+let labelName = ref('')
+let fromTitle = ref('')
+let handleAbsentForm = ref()
+let handleAbsentFormData = reactive({
+  status: 1,
+  response_content: '',
+})
+let absentId = 0
+
+const handleAbsentFormRules = reactive({
+  response_content: [
+    { required: true, message: '必须填写批复内容', trigger: 'blur' },
+    { min: 2, max: 100, message: '批复内容最少2个字, 最多100个字!', trigger: 'blur' },
+  ],
+})
+
+const agreeAbsent = (id) => {
+  absentId = id
+  fromTitle.value = '同意请假'
+  labelName.value = '批复内容'
+  handleAbsentFormData.status = 2
+  handleAbsentFormData.response_content = '同意'
+  dialogFormVisible.value = true
+}
+
+const rejectAbsent = (id) => {
+  absentId = id
+  fromTitle.value = '拒绝请假'
+  labelName.value = '拒绝理由'
+  handleAbsentFormData.status = 3
+  handleAbsentFormData.response_content = '拒绝本次请假, 理由:'
+  dialogFormVisible.value = true
+}
+
+const handleAbsent = () => {
+  handleAbsentForm.value.validate(async (valid, fields) => {
+    if (valid) {
+      try {
+        await absentHttp.requestHandleAbsent(absentId, handleAbsentFormData)
+        ElMessage.success('审批成功!')
+        dialogFormVisible.value = false
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } catch (detail) {
+        ElMessage.error(detail)
+      }
+    } else {
+      for (let key in fields) {
+        ElMessage.error(fields[key][0]['message'])
+      }
+      return false
+    }
+  })
+}
 </script>
 
 <template>
@@ -81,20 +140,23 @@ watch(
         </el-table-column>
         <el-table-column label="处理" min-width="150" fixed="right">
           <template #default="scope">
-            <div v-if="scope.row.status != 2">
+            <div v-if="scope.row.status == 1">
               <el-tooltip content="同意" placement="top" effect="light">
-                <el-button type="success">
+                <el-button type="success" @click="agreeAbsent(scope.row.id)">
                   <el-icon><Check /></el-icon>
                 </el-button>
               </el-tooltip>
               <el-tooltip content="拒绝" placement="top" effect="light">
-                <el-button type="danger">
+                <el-button type="danger" @click="rejectAbsent(scope.row.id)">
                   <el-icon><Close /></el-icon>
                 </el-button>
               </el-tooltip>
             </div>
             <div v-if="scope.row.status == 2">
               <el-button type="info" disabled>已处理</el-button>
+            </div>
+            <div v-if="scope.row.status == 3">
+              <el-button type="danger" disabled>已拒绝</el-button>
             </div>
           </template>
         </el-table-column>
@@ -104,6 +166,26 @@ watch(
       </template>
     </el-card>
   </OAMain>
+
+  <!-- 考勤处理 -->
+  <OADialog v-model="dialogFormVisible" :title="fromTitle" @submit="handleAbsent">
+    <el-form
+      :model="handleAbsentFormData"
+      :rules="handleAbsentFormRules"
+      ref="handleAbsentForm"
+      leble-width="80px"
+    >
+      <el-form-item :label="labelName" prop="response_content">
+        <el-input
+          type="textarea"
+          v-model="handleAbsentFormData.response_content"
+          placeholder="请输入批复内容..."
+          :autosize="{ minRows: 2, maxRows: 4 }"
+          resize="none"
+        />
+      </el-form-item>
+    </el-form>
+  </OADialog>
 </template>
 
 <style scoped></style>
