@@ -37,8 +37,8 @@ onMounted(async () => {
   try {
     // 获取下属考勤列表
     getSubAbsents(1)
-  } catch (error) {
-    ElMessage.error(error)
+  } catch (detail) {
+    ElMessage.error(detail)
   }
 })
 
@@ -114,7 +114,7 @@ const handleAbsent = () => {
 <template>
   <OAMain title="下属考勤">
     <el-card style="width: 1000px; text-align: right">
-      <el-button type="primary" plain @click="changeStatus(false)">
+      <el-button type="primary" @click="changeStatus(false)">
         <el-icon><List /></el-icon>
         <span>全部</span>
       </el-button>
@@ -208,7 +208,7 @@ const handleAbsent = () => {
       :model="handleAbsentFormData"
       :rules="handleAbsentFormRules"
       ref="handleAbsentForm"
-      leble-width="80px"
+      :label-width="80"
     >
       <el-form-item :label="labelName" prop="response_content">
         <el-input

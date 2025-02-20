@@ -210,7 +210,7 @@ const resetPassword = async () => {
       :model="resetPasswordFormData"
       :rules="resetPasswordFormRules"
       ref="resetPasswordForm"
-      leble-width="80px"
+      :label-width="80"
     >
       <el-form-item label="旧密码" prop="old_password">
         <el-input type="password" v-model="resetPasswordFormData.old_password" />

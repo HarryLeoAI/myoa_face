@@ -1229,3 +1229,14 @@ const requestAbsents = (who = 'my', page = 1, status = false) => {
 1. 新建`~/src/views/inform/`以及内部的三个视图`CreateInform.vue`, `InformList.vue`, `InformDetail.vue`
 2. 配路由 `~/src/router/index.js`在`frame`主路由里面配子路由
 3. `~/src/views/main/FrameView.vue`的模板部分绑定链接
+
+### 创建页面
+
+> 在执行`npm run dev` 时, 出现了一个提示:说`defineModel, defineEmits`不再需要被导入了
+
+> 前面的页面还有bug, 就是label-width写错了, 现在直接改成`:label-width="80"`
+
+1. 一个表单
+2. 在表单中集成 `wangEditor`
+   - 安装`npm install @wangeditor/editor-for-vue@next --save-dev`
+   -

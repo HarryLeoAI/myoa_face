@@ -49,8 +49,8 @@ onMounted(async () => {
 
     // 获取考勤列表
     getMyAbsents(1)
-  } catch (error) {
-    ElMessage.error(error.detail)
+  } catch (detail) {
+    ElMessage.error(detail)
   }
 })
 watch(
@@ -132,13 +132,13 @@ const createAbsent = async () => {
     <el-card style="width: 1000px">
       <div class="header-box">
         <div>
-          <el-button type="primary" @click="toggleCreateAbsentForm">
+          <el-button type="primary" plain @click="toggleCreateAbsentForm">
             <el-icon><Plus /></el-icon>
             <span>发起考勤</span>
           </el-button>
         </div>
         <div v-show="responder.realname">
-          <el-button type="primary" plain @click="changeStatus(false)">
+          <el-button type="primary" @click="changeStatus(false)">
             <el-icon><List /></el-icon>
             <span>全部</span>
           </el-button>
@@ -216,7 +216,7 @@ const createAbsent = async () => {
       :model="createAbsentdFormData"
       :rules="createAbsentFormRules"
       ref="createAbsentdForm"
-      leble-width="80px"
+      :label-width="80"
     >
       <el-form-item label="请假标题" prop="title">
         <el-input type="text" v-model="createAbsentdFormData.title" />
@@ -251,7 +251,7 @@ const createAbsent = async () => {
           resize="none"
         />
       </el-form-item>
-      <el-form-item label="- 审批领导" prop="">
+      <el-form-item label="审批领导">
         <el-input
           type="text"
           :value="
