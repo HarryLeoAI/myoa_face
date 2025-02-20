@@ -1,10 +1,13 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { ElMessage } from 'element-plus'
 import LoginView from '@/views/login/LoginView.vue'
 import FrameView from '@/views/main/FrameView.vue'
 import MyAbsent from '@/views/absent/MyAbsent.vue'
 import SubAbent from '@/views/absent/SubAbent.vue'
-import { useAuthStore } from '@/stores/auth'
-import { ElMessage } from 'element-plus'
+import CreateInform from '@/views/inform/CreateInform.vue'
+import InformList from '@/views/inform/InformList.vue'
+import InformDetail from '@/views/inform/InformDetail.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -23,6 +26,21 @@ const router = createRouter({
           path: 'absent/sub',
           name: 'subabsent',
           component: SubAbent,
+        },
+        {
+          path: 'inform/create',
+          name: 'createinform',
+          component: CreateInform,
+        },
+        {
+          path: 'inform/list',
+          name: 'informlist',
+          component: InformList,
+        },
+        {
+          path: 'inform/detail',
+          name: 'informdetail',
+          component: InformDetail,
         },
       ],
     },

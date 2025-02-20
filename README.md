@@ -1221,3 +1221,11 @@ const requestAbsents = (who = 'my', page = 1, status = false) => {
 4. 又一个坑, 不能直接在`<el-tag>`上面加判断, Vue会给出警告(虽然不影响正常运行),为此只有外面套一个`<span>`对其进行`v-show`判断
 
 5. 还有一个坑, 查询所有状态下的考勤, 列表返回2页数据, 换到第二页, 再点击筛选器, 哦豁! 页码不可用, 所以每次换页的时候, `page=1` 从第1页开始
+
+# 通知
+
+### 搭架子配路由
+
+1. 新建`~/src/views/inform/`以及内部的三个视图`CreateInform.vue`, `InformList.vue`, `InformDetail.vue`
+2. 配路由 `~/src/router/index.js`在`frame`主路由里面配子路由
+3. `~/src/views/main/FrameView.vue`的模板部分绑定链接

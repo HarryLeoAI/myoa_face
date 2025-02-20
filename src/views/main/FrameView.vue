@@ -141,11 +141,11 @@ const resetPassword = async () => {
           <el-icon><BellFilled /></el-icon>
           <span>通知管理</span>
         </template>
-        <el-menu-item index="2-1">
+        <el-menu-item index="2-1" :route="{ name: 'createinform' }">
           <el-icon><Phone /></el-icon>
           <span>发布通知</span>
         </el-menu-item>
-        <el-menu-item index="2-2">
+        <el-menu-item index="2-2" :route="{ name: 'informlist' }">
           <el-icon><List /></el-icon>
           <span>通知列表</span>
         </el-menu-item>
