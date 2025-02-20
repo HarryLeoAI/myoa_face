@@ -1239,4 +1239,221 @@ const requestAbsents = (who = 'my', page = 1, status = false) => {
 1. 一个表单
 2. 在表单中集成 `wangEditor`
    - 安装`npm install @wangeditor/editor-for-vue@next --save-dev`
-   -
+   - 集成进项目<a href="https://www.wangeditor.com/v5/for-frame.html#vue3">参考文档</a>
+3. 完整的代码(包括图片上传功能)
+
+```vue
+<script setup>
+// 导包
+import OAMain from '@/components/OAMain.vue'
+import { ref, reactive, onBeforeUnmount, shallowRef, onMounted } from 'vue'
+// 下面两条是wangEditor相关的
+import '@wangeditor/editor/dist/css/style.css'
+import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
+import { ElMessage } from 'element-plus'
+import staffHttp from '@/api/staffHttp'
+import { useAuthStore } from '@/stores/auth'
+import informHttp from '@/api/informHttp'
+
+const authStore = useAuthStore()
+
+// 获取部门数据
+let departments = ref([])
+onMounted(async () => {
+  try {
+    departments.value = await staffHttp.getDepartments()
+  } catch (detail) {
+    ElMessage.error(detail)
+  }
+})
+
+// 表单
+let createInformForm = ref()
+let createInformFormData = reactive({
+  title: '',
+  content: '',
+  department_ids: [],
+})
+
+const createInformFormRules = reactive({
+  title: [
+    { required: true, message: '必须填写通知标题', trigger: 'blur' },
+    { min: 2, max: 20, message: '标题最少2个字,最多20个字', trigger: 'blur' },
+  ],
+  // 没办法, wangEditor不填内容就是"<p><br></p>", 填一个字符1就是"<p>1</p>", 所以不能少于17个字符, 一对p标签就是7个字
+  // 再加上10个字的内容
+  // 就是做不了required必填验证
+  content: [{ min: 17, message: '必须填写通知内容!且不少于10个字', trigger: 'blur' }],
+})
+
+/**
+ * wangEditor
+ */
+// 编辑器实例，必须用 shallowRef
+const editorRef = shallowRef()
+
+// 编辑器-工具栏配置
+const toolbarConfig = {
+  // 排除的功能: 视频组 和 全屏功能
+  excludeKeys: ['group-video', 'fullScreen'],
+}
+// 编辑器-内容区域配置
+const editorConfig = {
+  // 占位提示
+  placeholder: '请输入内容...',
+  // 具体配置
+  MENU_CONF: {
+    // 图片上传功能
+    uploadImage: {
+      // 1, 上传的地址
+      server: import.meta.env.VITE_BASE_URL + '/image/upload/',
+      // 2, 上传过去的图片的key, 和后端序列化里设置的变量名必须一样
+      fieldName: 'image',
+      // 3, 前端图片大小校验, 单位b, 最大1mb
+      maxFileSize: 1 * 1024 * 1024,
+      // 4, 可以批量上传几张?
+      maxNumberOfFiles: 10,
+      // 5, 允许的图片烈性
+      allowedFileTypes: ['image/*'],
+      // 6, 配置请求头
+      headers: {
+        Authorization: 'JWT ' + authStore.token,
+      },
+      // 7, 自定义后端上传成功后, 前端进行展示的参数
+      customInsert(res, insertFn) {
+        if (res.errno == 0) {
+          // 必须配置图片地址为绝对地址, 否则端口是5173(VUE的), 而非8000(django的)
+          let url = import.meta.env.VITE_BASE_URL + res.data.url
+          let alt = res.data.alt
+          let href = import.meta.env.VITE_BASE_URL + res.data.href
+          insertFn(url, alt, href)
+        } else {
+          ElMessage.error(res.message)
+        }
+      },
+      // 上传失败时执行
+      onFailed() {
+        ElMessage.error('图片上传失败!')
+      },
+      // 出现错误时执行
+      onError() {
+        ElMessage.error('图片上传失败!')
+      },
+    },
+  },
+}
+// wangEditor的模式, 直接default
+let mode = 'default'
+
+// 组件销毁时，也及时销毁编辑器
+onBeforeUnmount(() => {
+  const editor = editorRef.value
+  if (editor == null) return
+  editor.destroy()
+})
+
+const handleCreated = (editor) => {
+  editorRef.value = editor // 记录 editor 实例，重要！
+}
+
+// 提交表单
+const onSubmit = async () => {
+  createInformForm.value.validate(async (valid, fields) => {
+    if (valid) {
+      try {
+        let inform = await informHttp.createInform(createInformFormData)
+        ElMessage.success('通知发布成功')
+        setTimeout(() => {
+          console.log(inform)
+          // 一秒钟以后跳转到详情页, 待完成....
+        }, 1000)
+      } catch (detail) {
+        ElMessage.error(detail)
+      }
+    } else {
+      for (let key in fields) {
+        ElMessage.error(fields[key][0]['message'])
+      }
+      return false
+    }
+  })
+}
+</script>
+
+<template>
+  <OAMain title="发布通知">
+    <el-card style="width: 1000px">
+      <!-- el-card头部插槽 -->
+      <template #header>
+        <h1 style="text-align: center">发布通知</h1>
+      </template>
+      <!-- el-card默认插槽(身体部分) -->
+      <el-form
+        :model="createInformFormData"
+        :rules="createInformFormRules"
+        ref="createInformForm"
+        :label-width="100"
+      >
+        <el-form-item label="通知标题" prop="title">
+          <el-input type="text" v-model="createInformFormData.title" />
+        </el-form-item>
+        <el-form-item label="通知内容" prop="content">
+          <div style="border: 1px solid #ccc; width: 100%">
+            <Toolbar
+              style="border-bottom: 1px solid #ccc"
+              :editor="editorRef"
+              :defaultConfig="toolbarConfig"
+              :mode="mode"
+            />
+            <!-- wangEditor的内部部分, 以v-model绑定表单的content属性 -->
+            <Editor
+              style="height: 500px; overflow-y: hidden"
+              v-model="createInformFormData.content"
+              :defaultConfig="editorConfig"
+              :mode="mode"
+              @onCreated="handleCreated"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item label="可见部门">
+          <el-checkbox-group v-model="createInformFormData.department_ids">
+            <el-tooltip
+              content="注意: 所有部门被勾选时, 即使勾选了其他部门也被视为所有部门可见!"
+              placement="top"
+              effect="light"
+            >
+              <el-checkbox label="所有部门" :value="0" />
+            </el-tooltip>
+            <el-checkbox
+              v-for="department in departments"
+              :label="department.name"
+              :value="department.id"
+              :key="department.id"
+            />
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div style="text-align: center">
+          <el-button type="primary" class="create-inform-submit-button" @click="onSubmit">
+            提交
+          </el-button>
+        </div>
+      </template>
+    </el-card>
+  </OAMain>
+</template>
+
+<style scoped>
+.create-inform-submit-button {
+  margin-bottom: 20px;
+  width: 100px;
+  height: 40px;
+}
+</style>
+```
+
+- 前端有1个问题:`~/.env.development`配置文件中`VITE_BASE_URL = 'http://localhost:8000/'`地址最后的`/`会导致wangEditor上传的图片地址编程`http://localhost:8000//media/图片地址`, 经发现,删除`/`后, 不影响`http.js`里`axios.baseURL`
+- 后端有2个:1是没有给图片配置上路由, 2是中间件拦住了前端访问wangEditor在编辑页访问自己上传进去的图片, 解决参考后端部分
+
+4. 新建`~/src/api/informHttp.js`, 完成提交按钮引发的发布功能, 略

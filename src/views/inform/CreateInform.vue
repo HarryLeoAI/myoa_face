@@ -5,6 +5,10 @@ import '@wangeditor/editor/dist/css/style.css'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { ElMessage } from 'element-plus'
 import staffHttp from '@/api/staffHttp'
+import { useAuthStore } from '@/stores/auth'
+import informHttp from '@/api/informHttp'
+
+const authStore = useAuthStore()
 
 // 获取部门数据
 let departments = ref([])
@@ -41,8 +45,41 @@ const createInformFormRules = reactive({
 // 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef()
 
-const toolbarConfig = {}
-const editorConfig = { placeholder: '请输入内容...' }
+const toolbarConfig = {
+  excludeKeys: ['group-video', 'fullScreen'],
+}
+// 配置
+const editorConfig = {
+  placeholder: '请输入内容...',
+  MENU_CONF: {
+    uploadImage: {
+      server: import.meta.env.VITE_BASE_URL + '/image/upload/',
+      fieldName: 'image',
+      maxFileSize: 1 * 1024 * 1024,
+      maxNumberOfFiles: 10,
+      allowedFileTypes: ['image/*'],
+      headers: {
+        Authorization: 'JWT ' + authStore.token,
+      },
+      customInsert(res, insertFn) {
+        if (res.errno == 0) {
+          let url = import.meta.env.VITE_BASE_URL + res.data.url
+          let alt = res.data.alt
+          let href = import.meta.env.VITE_BASE_URL + res.data.href
+          insertFn(url, alt, href)
+        } else {
+          ElMessage.error(res.message)
+        }
+      },
+      onFailed() {
+        ElMessage.error('图片上传失败!')
+      },
+      onError() {
+        ElMessage.error('图片上传失败!')
+      },
+    },
+  },
+}
 let mode = 'default'
 
 // 组件销毁时，也及时销毁编辑器
@@ -56,10 +93,19 @@ const handleCreated = (editor) => {
   editorRef.value = editor // 记录 editor 实例，重要！
 }
 
-const onSubmit = () => {
-  createInformForm.value.validate((valid, fields) => {
+const onSubmit = async () => {
+  createInformForm.value.validate(async (valid, fields) => {
     if (valid) {
-      console.log(createInformFormData)
+      try {
+        let inform = await informHttp.createInform(createInformFormData)
+        ElMessage.success('通知发布成功')
+        setTimeout(() => {
+          console.log(inform)
+          // 一秒钟以后跳转到详情页, 待完成....
+        }, 1000)
+      } catch (detail) {
+        ElMessage.error(detail)
+      }
     } else {
       for (let key in fields) {
         ElMessage.error(fields[key][0]['message'])
