@@ -1457,3 +1457,12 @@ const onSubmit = async () => {
 - 后端有2个:1是没有给图片配置上路由, 2是中间件拦住了前端访问wangEditor在编辑页访问自己上传进去的图片, 解决参考后端部分
 
 4. 新建`~/src/api/informHttp.js`, 完成提交按钮引发的发布功能, 略
+
+### 列表页面
+
+1. 导入复用组件
+2. 写好模板: 插入组件, 写好`<el-table>`
+3. 在`informHttp.js`中完成请求方法`requestInform()`,拼接好路由后, 让它调用`http.js.get()`获取数据
+4. 回到列表页, setup中写好获取数据的方法`getInform`, 然后在生命周期函数`onMounted`中调用一次, 同时用`watch`监听页码的变化, 每次变化再调用一次, 实现获取数据并分页
+5. 渲染几乎没有难点, 基本数据直接在`el-table-column`上生命`props`, 复杂逻辑就在`el-table-column`里写一个`<template #default="scope">`,再在这个插槽内用`scope.row`获取当前行的数据
+6. 路由配置有问题, 详情页后面应该传参, `~src/router/index.js`中关于informdetail,即详情页的路由应该是`path: 'inform/detail/:pk',`

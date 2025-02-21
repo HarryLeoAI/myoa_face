@@ -6,4 +6,10 @@ const createInform = (data) => {
   return http.post(path, data)
 }
 
-export default { createInform }
+const requestInform = (page = 1) => {
+  const path = `/inform/?page=${page}`
+
+  return http.get(path)
+}
+
+export default { createInform, requestInform }

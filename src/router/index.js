@@ -38,7 +38,7 @@ const router = createRouter({
           component: InformList,
         },
         {
-          path: 'inform/detail',
+          path: 'inform/detail/:pk',
           name: 'informdetail',
           component: InformDetail,
         },
