@@ -1466,3 +1466,26 @@ const onSubmit = async () => {
 4. 回到列表页, setup中写好获取数据的方法`getInform`, 然后在生命周期函数`onMounted`中调用一次, 同时用`watch`监听页码的变化, 每次变化再调用一次, 实现获取数据并分页
 5. 渲染几乎没有难点, 基本数据直接在`el-table-column`上生命`props`, 复杂逻辑就在`el-table-column`里写一个`<template #default="scope">`,再在这个插槽内用`scope.row`获取当前行的数据
 6. 路由配置有问题, 详情页后面应该传参, `~src/router/index.js`中关于informdetail,即详情页的路由应该是`path: 'inform/detail/:pk',`
+
+### 删除通知
+
+1. 删除按钮点击后弹出`ElMessageBox.confirm`确认是否删除
+   - 自定义提示内容可以引用`h`后进行配置`import { ..., h } from 'vue'`, 示例:
+   ```js
+   ElMessageBox.confirm(
+     h('div', null, [
+       h('p', null, `标题为:【${data.title}】`),
+       h('p', null, `发布时间是:【${timeFormatter.stringFromDateTime(data.create_time)}】`),
+       h('p', { style: 'color:red;' }, '确认删除?'),
+     ]),
+     {
+       //其他配置
+     },
+   )
+   ```
+2. 通过`.them()` 确定按钮点击后实行真正的删除操作
+   - 在`/src/api/http.js`中新建`delete`函数, 用于以`DELETE`方式请求后端服务器
+   - 在`informHttp.js`中新建`deleteInform(id)`函数, 拼接好`path`后调用`http.delete()`
+   - 在`~/src/views/InformList.vue`中, `ElMessageBox.confirm().then()`里面调用`informHttp.deleteInform(id)`函数, 根据id删除数据库中的数据
+   - 列表展示页上的删除按钮绑定的点击事件是可以传递参数的, 在模板上用`@click="onDelete(scope.row)`直接将整行数据传递过来
+3. 后端部分需要完善逻辑: 要删除某条通知, 要求必须发布者(author)是自己才行, 参考后端.

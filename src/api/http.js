@@ -43,11 +43,23 @@ class Http {
     })
   }
 
-  put(path, data) {
+  put = (path, data) => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
         let result = await this.instance.put(path, data)
+        resolve(result.data)
+      } catch (err) {
+        reject(err.response.data.detail)
+      }
+    })
+  }
+
+  delete = (path) => {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      try {
+        let result = await this.instance.delete(path)
         resolve(result.data)
       } catch (err) {
         reject(err.response.data.detail)

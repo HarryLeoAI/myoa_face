@@ -12,4 +12,10 @@ const requestInform = (page = 1) => {
   return http.get(path)
 }
 
-export default { createInform, requestInform }
+const deleteInform = (id) => {
+  const path = `/inform/${id}/`
+
+  return http.delete(path)
+}
+
+export default { createInform, requestInform, deleteInform }

@@ -1,9 +1,9 @@
 <script setup>
 import OAMain from '@/components/OAMain.vue'
 import OAPagination from '@/components/OAPagination.vue'
-import { onMounted, ref, reactive, watch } from 'vue'
+import { onMounted, ref, reactive, watch, h } from 'vue'
 import informHttp from '@/api/informHttp'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import timeFormatter from '@/utils/timeFormatter'
 import { useAuthStore } from '@/stores/auth'
 
@@ -21,7 +21,6 @@ const getInform = async (page) => {
   try {
     let informsData = await informHttp.requestInform(page)
     informs.value = informsData.results
-    console.log(informs.value)
     pagination.total = informsData.count
   } catch (detail) {
     ElMessage(detail)
@@ -51,7 +50,7 @@ const getRandomColor = () => {
  * 判断删除按钮是否禁用
  */
 const deleteButtonAvailable = (author) => {
-  if (author.email == authStore.user.email) {
+  if (author.uid == authStore.user.uid) {
     return false
   } else {
     return true
@@ -69,8 +68,37 @@ const onDetail = (id) => {
 /**
  * 删除
  */
-const onDelete = (id) => {
-  console.log(`当前行inform的id是${id}`)
+
+const onDelete = (data) => {
+  ElMessageBox.confirm(
+    h('div', null, [
+      h('p', null, `标题为:【${data.title}】`),
+      h('p', null, `发布时间是:【${timeFormatter.stringFromDateTime(data.create_time)}】`),
+      h('p', { style: 'color:red;' }, '确认删除?'),
+    ]),
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    },
+  )
+    .then(async () => {
+      try {
+        await informHttp.deleteInform(data.id)
+        ElMessage.success('删除成功')
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } catch (error) {
+        ElMessage.error(error)
+      }
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消删除',
+      })
+    })
 }
 </script>
 
@@ -126,7 +154,7 @@ const onDelete = (id) => {
             <el-tooltip content="删除通知" placement="top" effect="light">
               <el-button
                 type="danger"
-                @click="onDelete(scope.row.id)"
+                @click="onDelete(scope.row)"
                 :disabled="deleteButtonAvailable(scope.row.author)"
               >
                 <el-icon><Delete /></el-icon>
