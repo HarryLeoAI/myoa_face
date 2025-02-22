@@ -21,6 +21,7 @@ const getInform = async (page) => {
   try {
     let informsData = await informHttp.requestInform(page)
     informs.value = informsData.results
+    console.log(informs.value)
     pagination.total = informsData.count
   } catch (detail) {
     ElMessage(detail)
@@ -92,6 +93,15 @@ const onDelete = (data) => {
       })
     })
 }
+
+/**判断当前行是否已读 */
+const checkRead = (data) => {
+  if (data.length == 0) {
+    return true
+  }
+
+  return false
+}
 </script>
 
 <template>
@@ -100,11 +110,16 @@ const onDelete = (data) => {
       <el-table :data="informs">
         <el-table-column label="通知标题" fixed width="200">
           <template #default="scope">
-            <el-tooltip content="点击标题查看详情" placement="top" effect="dark">
+            <el-tooltip
+              :content="checkRead(scope.row.been_read) ? '未读' : '已读'"
+              placement="left"
+              effect="dark"
+            >
               <router-link
                 class="router-no-decoration title-router"
                 :to="{ name: 'informdetail', params: { pk: scope.row.id } }"
               >
+                <span v-if="checkRead(scope.row.been_read)" style="color: red">!</span>
                 {{ scope.row.title }}
               </router-link>
             </el-tooltip>

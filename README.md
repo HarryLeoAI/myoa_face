@@ -1518,3 +1518,11 @@ const onSubmit = async () => {
 1. 阅读一次底层自动增加阅读量, 以及前端展示阅读量
    - `informHttp.js`新增`readInform`函数, 函数通过路由`../inform/onread/`调用后台接口`InformReadView`
    - 在`InfromDetail.vue`中,`onMounted()`时,调用`readInform()`, 实现阅读量的自动增长
+2. 在列表页,通过判断`.been_read`的长度,展示已读未读.
+
+   > 在后端完成序列化嵌套后, 前端就有相应的只读字段了. 通过判断该字段的长度即可实现确认数据是否已读
+
+   - 我写了个函数`checkRead()`,传入当前行的been_read数据,判断长度,返回真假
+   - 标题前是否展示红色感叹号?`<span v-if="checkRead(scope.row.been_read)" style="color: red">!</span>`
+
+   > element-plus 提供了`badge`组件可以实现同样的效果:`<el-badge v-if="checkRead(scope.row.been_read)" is-dot class="item">标题放里面</el-badge>`, 但这是OA项目, 加上我讨厌红点, 所以我决定用我的方式实现更简洁的效果: 未读前面有个红色的小感叹号
