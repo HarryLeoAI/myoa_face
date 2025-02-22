@@ -113,7 +113,7 @@ const handleAbsent = () => {
 
 <template>
   <OAMain title="下属考勤">
-    <el-card style="width: 1000px; text-align: right">
+    <el-card style="width: 1000px">
       <el-button type="primary" @click="changeStatus(false)">
         <el-icon><List /></el-icon>
         <span>全部</span>

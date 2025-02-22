@@ -58,14 +58,6 @@ const deleteButtonAvailable = (author) => {
 }
 
 /**
- * 查看详情
- */
-const onDetail = (id) => {
-  console.log(`当前行inform的id是${id}`)
-  // ...
-}
-
-/**
  * 删除
  */
 
@@ -110,7 +102,7 @@ const onDelete = (data) => {
           <template #default="scope">
             <el-tooltip content="点击标题查看详情" placement="top" effect="dark">
               <router-link
-                class="title-router"
+                class="router-no-decoration title-router"
                 :to="{ name: 'informdetail', params: { pk: scope.row.id } }"
               >
                 {{ scope.row.title }}
@@ -147,9 +139,14 @@ const onDelete = (data) => {
         <el-table-column label="操作" min-width="150" fixed="right">
           <template #default="scope">
             <el-tooltip content="查看详情" placement="top" effect="light">
-              <el-button type="success" @click="onDetail(scope.row.id)">
-                <el-icon><View /></el-icon>
-              </el-button>
+              <router-link
+                :to="{ name: 'informdetail', params: { pk: scope.row.id } }"
+                class="router-no-decoration button-router"
+              >
+                <el-button type="success">
+                  <el-icon><View /></el-icon>
+                </el-button>
+              </router-link>
             </el-tooltip>
             <el-tooltip content="删除通知" placement="top" effect="light">
               <el-button
@@ -171,9 +168,14 @@ const onDelete = (data) => {
 </template>
 
 <style scoped>
-.title-router {
+.router-no-decoration {
   text-decoration: none;
-  color: #000;
-  font-weight: bold;
+}
+.title-router {
+  color: black;
+}
+.button-router {
+  color: white;
+  margin: 0 15px 0 15px;
 }
 </style>

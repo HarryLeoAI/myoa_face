@@ -18,4 +18,10 @@ const deleteInform = (id) => {
   return http.delete(path)
 }
 
-export default { createInform, requestInform, deleteInform }
+const requestInformDetail = (id) => {
+  const path = `/inform/${id}`
+
+  return http.get(path)
+}
+
+export default { createInform, requestInform, deleteInform, requestInformDetail }

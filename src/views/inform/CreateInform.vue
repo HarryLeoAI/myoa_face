@@ -7,6 +7,7 @@ import { ElMessage } from 'element-plus'
 import staffHttp from '@/api/staffHttp'
 import { useAuthStore } from '@/stores/auth'
 import informHttp from '@/api/informHttp'
+import router from '@/router'
 
 const authStore = useAuthStore()
 
@@ -94,14 +95,17 @@ const handleCreated = (editor) => {
 }
 
 const onSubmit = async () => {
+  if (createInformFormData.department_ids.length === 0) {
+    ElMessage.error('必须选择可见部门!')
+    return false
+  }
   createInformForm.value.validate(async (valid, fields) => {
     if (valid) {
       try {
         let inform = await informHttp.createInform(createInformFormData)
         ElMessage.success('通知发布成功')
         setTimeout(() => {
-          console.log(inform)
-          // 一秒钟以后跳转到详情页, 待完成....
+          router.push({ name: 'informdetail', params: { pk: inform.id } })
         }, 1000)
       } catch (detail) {
         ElMessage.error(detail)
@@ -157,6 +161,7 @@ const onSubmit = async () => {
             >
               <el-checkbox label="所有部门" :value="0" />
             </el-tooltip>
+            <p></p>
             <el-checkbox
               v-for="department in departments"
               :label="department.name"

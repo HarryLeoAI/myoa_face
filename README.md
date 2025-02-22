@@ -1489,3 +1489,24 @@ const onSubmit = async () => {
    - 在`~/src/views/InformList.vue`中, `ElMessageBox.confirm().then()`里面调用`informHttp.deleteInform(id)`函数, 根据id删除数据库中的数据
    - 列表展示页上的删除按钮绑定的点击事件是可以传递参数的, 在模板上用`@click="onDelete(scope.row)`直接将整行数据传递过来
 3. 后端部分需要完善逻辑: 要删除某条通知, 要求必须发布者(author)是自己才行, 参考后端.
+
+### 通知详情
+
+1. `infromHttp.js` 新建方法`requestInformDetail(id)` 通过传入的id拼接正确的path, 再以get请求
+2. 给`informList.vue`通知列表页绑定好路由
+   - 标题
+   - 查看详情按钮
+   - `<router-link:to="{ name: 'informdetail', params: { pk: scope.row.id } }">`
+     > {name: '路由名称参考index.js'}
+     > {..., params: {key: value} }
+3. 在`InformDetail.vue`中进行以下步骤
+   1. 获取url里传过来的参数pk:`route.params.pk`
+      > 记得引用router`import { useRoute } from 'vue-router'`, 然后实例化`route = useRoute()`
+   2. `onMounted`调用`infromHttp.js.requestInformDetail(id)`, 传入`route.params.pk`作为`(id)`, 获取详情
+   3. 有个莫名奇妙的问题: 似乎只能读取一层数据? 如果我读取`inform.author.realname`会报错! 那没关系, 我直接把这些数据用新的响应式变量存储即可:`author.value = inform.value.author.realname`
+   4. 渲染页面
+4. 完成`createInform.vue`里的`onSubmit()`, 提交后, 自动跳转到详情页`router.push({ name: 'informdetail', params: { pk: inform.id } })`
+5. 填坑: 前后端都没有校验可见部门, 有两种处理逻辑:
+   - 要么不选, 前端提交的ids为`[]` 时, 自动公开, 自动所有部门可见
+   - 要么强制要求选, 不选前端报错, 后端`raise exceptions.ValidationError()`
+     > 我用的第二种, 判断逻辑非常简单, 就是判断数组长度是否为0即可.前端:`arr.length == 0`, 后端`len(arr)`
