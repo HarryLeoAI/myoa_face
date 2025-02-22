@@ -24,4 +24,11 @@ const requestInformDetail = (id) => {
   return http.get(path)
 }
 
-export default { createInform, requestInform, deleteInform, requestInformDetail }
+const readInform = (inform_id) => {
+  console.log(inform_id)
+  const path = `/inform/onread/`
+
+  return http.post(path, { inform_id })
+}
+
+export default { createInform, requestInform, deleteInform, requestInformDetail, readInform }

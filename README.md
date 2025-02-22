@@ -1504,6 +1504,7 @@ const onSubmit = async () => {
       > 记得引用router`import { useRoute } from 'vue-router'`, 然后实例化`route = useRoute()`
    2. `onMounted`调用`infromHttp.js.requestInformDetail(id)`, 传入`route.params.pk`作为`(id)`, 获取详情
    3. 有个莫名奇妙的问题: 似乎只能读取一层数据? 如果我读取`inform.author.realname`会报错! 那没关系, 我直接把这些数据用新的响应式变量存储即可:`author.value = inform.value.author.realname`
+      > 后来我修改了代码, 将变量存储为reactive, 并且将变量定义的与所需要的数据格式一一对应, 最后用`Object.assign(inform, informData)`将后者数据写入前者
    4. 渲染页面
 4. 完成`createInform.vue`里的`onSubmit()`, 提交后, 自动跳转到详情页`router.push({ name: 'informdetail', params: { pk: inform.id } })`
 5. 填坑: 前后端都没有校验可见部门, 有两种处理逻辑:
@@ -1511,3 +1512,9 @@ const onSubmit = async () => {
    - 要么强制要求选, 不选前端报错, 后端`raise exceptions.ValidationError()`
      > 我用的第二种, 判断逻辑非常简单, 就是判断数组长度是否为0即可.前端:`arr.length == 0`, 后端`len(arr)`
 6. 补充一个知识点: 富文本编辑器的内容都是由html标签组成的, 所以没有任何样式的`123`存进数据库里其实是`<p>123</p>`, 为了将他展示成本来的样子,就需要使用`v-html`,比如 `<div v-html="inform.content"></div>`
+
+### 阅读量
+
+1. 阅读一次底层自动增加阅读量, 以及前端展示阅读量
+   - `informHttp.js`新增`readInform`函数, 函数通过路由`../inform/onread/`调用后台接口`InformReadView`
+   - 在`InfromDetail.vue`中,`onMounted()`时,调用`readInform()`, 实现阅读量的自动增长

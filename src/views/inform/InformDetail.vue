@@ -1,28 +1,35 @@
 <script setup>
 import OAMain from '@/components/OAMain.vue'
 import { useRoute } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive } from 'vue'
 import informHttp from '@/api/informHttp'
 import { ElMessage } from 'element-plus'
 import timeFormatter from '@/utils/timeFormatter'
 
 const route = useRoute()
-let inform = ref({})
-let author = ref('')
-let department = ref('')
-let date = ref('')
-let time = ref('')
+
+let inform = reactive({
+  id: 0,
+  title: '',
+  author: {
+    realname: '',
+    department: {
+      name: '',
+    },
+  },
+  departments: [],
+  public: false,
+  been_read: 0,
+  create_time: '',
+})
 onMounted(async () => {
   try {
-    inform.value = await informHttp.requestInformDetail(route.params.pk)
+    let informData = await informHttp.requestInformDetail(route.params.pk)
+    Object.assign(inform, informData)
+    await informHttp.readInform(inform.id)
   } catch (error) {
     ElMessage.error(error)
   }
-
-  author.value = inform.value.author.realname
-  department.value = inform.value.author.department.name
-  date.value = timeFormatter.stringFromDate(inform.value.create_time)
-  time.value = timeFormatter.stringFromDateTime(inform.value.create_time)
 })
 </script>
 
@@ -30,9 +37,11 @@ onMounted(async () => {
   <OAMain title="通知详情">
     <el-card style="width: 1000px">
       <template #header>
-        <h1 style="text-align: center">
-          {{ inform.title }}
-        </h1>
+        <el-tooltip :content="'已读人数:' + inform.been_read" placement="bottom" effect="light">
+          <h1 style="text-align: center">
+            {{ inform.title }}
+          </h1>
+        </el-tooltip>
       </template>
       <div v-html="inform.content"></div>
       <template #footer>
@@ -42,7 +51,6 @@ onMounted(async () => {
               <el-tag type="danger">所有部门可见</el-tag>
             </div>
             <div v-if="!inform.public">
-              <small>已读:10,</small>
               <el-tooltip content="可见部门" placement="right" effect="dark">
                 <div class="departments-space">
                   <el-tag
@@ -57,8 +65,15 @@ onMounted(async () => {
             </div>
           </div>
           <div>
-            <el-tooltip :content="'准确时间:' + time" placement="left" effect="dark">
-              <span> {{ date }}, {{ department }}-{{ author }} </span>
+            <el-tooltip
+              :content="'准确时间:' + timeFormatter.stringFromDateTime(inform.create_time)"
+              placement="left"
+              effect="dark"
+            >
+              <span>
+                {{ timeFormatter.stringFromDate(inform.create_time) }},
+                {{ inform.author.department.name }}-{{ inform.author.realname }}
+              </span>
             </el-tooltip>
           </div>
         </div>
