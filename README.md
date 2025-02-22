@@ -1510,3 +1510,4 @@ const onSubmit = async () => {
    - 要么不选, 前端提交的ids为`[]` 时, 自动公开, 自动所有部门可见
    - 要么强制要求选, 不选前端报错, 后端`raise exceptions.ValidationError()`
      > 我用的第二种, 判断逻辑非常简单, 就是判断数组长度是否为0即可.前端:`arr.length == 0`, 后端`len(arr)`
+6. 补充一个知识点: 富文本编辑器的内容都是由html标签组成的, 所以没有任何样式的`123`存进数据库里其实是`<p>123</p>`, 为了将他展示成本来的样子,就需要使用`v-html`,比如 `<div v-html="inform.content"></div>`

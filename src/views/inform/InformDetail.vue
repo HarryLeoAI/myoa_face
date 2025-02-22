@@ -30,7 +30,9 @@ onMounted(async () => {
   <OAMain title="通知详情">
     <el-card style="width: 1000px">
       <template #header>
-        <h1 style="text-align: center">{{ inform.title }}</h1>
+        <h1 style="text-align: center">
+          {{ inform.title }}
+        </h1>
       </template>
       <div v-html="inform.content"></div>
       <template #footer>
@@ -40,14 +42,18 @@ onMounted(async () => {
               <el-tag type="danger">所有部门可见</el-tag>
             </div>
             <div v-if="!inform.public">
-              <span>可见部门:</span>
-              <el-tag
-                class="department-tag"
-                v-for="department in inform.departments"
-                :key="department.id"
-              >
-                {{ department.name }}
-              </el-tag>
+              <small>已读:10,</small>
+              <el-tooltip content="可见部门" placement="right" effect="dark">
+                <div class="departments-space">
+                  <el-tag
+                    class="department-tag"
+                    v-for="department in inform.departments"
+                    :key="department.id"
+                  >
+                    {{ department.name }}
+                  </el-tag>
+                </div>
+              </el-tooltip>
             </div>
           </div>
           <div>
@@ -68,5 +74,8 @@ onMounted(async () => {
 }
 .department-tag {
   margin: 0 5px 0 5px;
+}
+.departments-space {
+  display: inline;
 }
 </style>
