@@ -156,11 +156,11 @@ const resetPassword = async () => {
           <el-icon><UserFilled /></el-icon>
           <span>员工管理</span>
         </template>
-        <el-menu-item index="3-1">
+        <el-menu-item index="3-1" :route="{ name: 'createstaff' }">
           <el-icon><CirclePlusFilled /></el-icon>
           <span>新增员工</span>
         </el-menu-item>
-        <el-menu-item index="3-2">
+        <el-menu-item index="3-2" :route="{ name: 'stafflist' }">
           <el-icon><Memo /></el-icon>
           <span>员工列表</span>
         </el-menu-item>

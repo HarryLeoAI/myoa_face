@@ -1526,3 +1526,15 @@ const onSubmit = async () => {
    - 标题前是否展示红色感叹号?`<span v-if="checkRead(scope.row.been_read)" style="color: red">!</span>`
 
    > element-plus 提供了`badge`组件可以实现同样的效果:`<el-badge v-if="checkRead(scope.row.been_read)" is-dot class="item">标题放里面</el-badge>`, 但这是OA项目, 加上我讨厌红点, 所以我决定用我的方式实现更简洁的效果: 未读前面有个红色的小感叹号
+
+# 员工管理模块
+
+### 搭架子
+
+1. 两个新视图, 新增员工`~/src/views/staff/CreateStaff.vue`, 员工列表`StaffList.vue`
+2. 在`~/src/router/index.js`中配置路由
+3. 在`FrameView.vue`中给侧边栏导航绑定路由
+
+### 新增员工
+
+1. 表单, 略.

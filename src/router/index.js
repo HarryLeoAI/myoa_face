@@ -8,6 +8,8 @@ import SubAbent from '@/views/absent/SubAbent.vue'
 import CreateInform from '@/views/inform/CreateInform.vue'
 import InformList from '@/views/inform/InformList.vue'
 import InformDetail from '@/views/inform/InformDetail.vue'
+import CreateStaff from '@/views/staff/CreateStaff.vue'
+import StaffList from '@/views/staff/StaffList.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -41,6 +43,16 @@ const router = createRouter({
           path: 'inform/detail/:pk',
           name: 'informdetail',
           component: InformDetail,
+        },
+        {
+          path: 'staff/create',
+          name: 'createstaff',
+          component: CreateStaff,
+        },
+        {
+          path: 'staff/list',
+          name: 'stafflist',
+          component: StaffList,
         },
       ],
     },
