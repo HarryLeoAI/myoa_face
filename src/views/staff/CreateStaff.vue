@@ -3,6 +3,8 @@ import OAMain from '@/components/OAMain.vue'
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
+import staffHttp from '@/api/staffHttp'
+import router from '@/router'
 
 const authStore = useAuthStore()
 
@@ -56,7 +58,7 @@ const resetForm = () => {
  * 提交表单
  */
 const onSubmit = () => {
-  createStaffForm.value.validate((valid, fields) => {
+  createStaffForm.value.validate(async (valid, fields) => {
     if (valid) {
       // 验证邮箱格式
       let emailRgx = /^([a-zA-Z0-9._-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9])+/
@@ -64,7 +66,19 @@ const onSubmit = () => {
         ElMessage.error('邮箱格式不正确! 请检查.')
         return false
       }
+
       console.log(createStaffFormData)
+      try {
+        await staffHttp.createStaff(
+          createStaffFormData.email,
+          createStaffFormData.realname,
+          createStaffFormData.telphone,
+        )
+        ElMessage.success('员工创建成功')
+        router.push({ name: 'stafflist' })
+      } catch (detail) {
+        ElMessage.error(detail)
+      }
     } else {
       for (let key in fields) {
         ElMessage.error(fields[key][0]['message'])

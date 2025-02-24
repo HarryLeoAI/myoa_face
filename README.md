@@ -1539,3 +1539,5 @@ const onSubmit = async () => {
 
 1. 表单, 略.
    > 重新整理前端: 所属部门, 初始密码这两个字段, 直接在后端完成, 然后为了避免董事会没有manager, 判断时容易出错的问题, 修改项目逻辑: 就只有本部直属领导可以创建员工
+2. `~/src/api/staffHttp.js` 中新建方法`createStaff(email, realname, telphone)`, 传入邮箱, 真名, 电话后, 以`post`请求后端`/staff/` 接口, 即视图层的`StaffView.post()`
+3. 有个小问题, 发现后端如果用APIView实现接口, 就不能直接把一个`reactive()`定义的响应式变量传给后端, 必须要拆成干净的对象: `return http.post(path, { email, realname, telphone })`后端才收得到
