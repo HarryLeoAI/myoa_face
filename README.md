@@ -1541,3 +1541,26 @@ const onSubmit = async () => {
    > 重新整理前端: 所属部门, 初始密码这两个字段, 直接在后端完成, 然后为了避免董事会没有manager, 判断时容易出错的问题, 修改项目逻辑: 就只有本部直属领导可以创建员工
 2. `~/src/api/staffHttp.js` 中新建方法`createStaff(email, realname, telphone)`, 传入邮箱, 真名, 电话后, 以`post`请求后端`/staff/` 接口, 即视图层的`StaffView.post()`
 3. 有个小问题, 发现后端如果用APIView实现接口, 就不能直接把一个`reactive()`定义的响应式变量传给后端, 必须要拆成干净的对象: `return http.post(path, { email, realname, telphone })`后端才收得到
+
+### 员工激活
+
+1. 大部分逻辑都在后端实现了, 甚至页面都用的是 DTL 模板(django自带的写在/templates/里的), 但是我需要处理一个逻辑: 后端激活成功后, 是`return HttpResponseRedirect(str(settings.FRONTEND_URL + "/login/?from=back"))` 直接跨域重定向到前端的登录页面的, 注意url, 后面拼接了一个参数:`?from=back`, 在登录页面我就需要判断一下from的值, 来提示用户激活成功与否
+
+```js
+// 导入useRoute, 它的实例可以通过.query.参数名获取url参数值
+import { useRouter, useRoute } from 'vue-router'
+const route = useRoute()
+// 判断是不是后端跳转过来的
+const isFromBack = () => {
+  const from = route.query.from // 获取URL参数 'from'
+  if (from === 'back') {
+    ElMessage.success('账号激活成功, 欢迎登录!')
+  }
+}
+// 挂载完成后执行函数
+onMounted(() => {
+  isFromBack()
+})
+```
+
+> 这样一来, 登录页面正常访问没有任何问题, 后端激活后过来就会因为带有`?from=back`的参数导致组件挂载后调用`isFromBack()`后弹出成功提示

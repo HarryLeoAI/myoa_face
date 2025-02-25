@@ -1,16 +1,30 @@
 <script setup name="login">
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import authHttp from '@/api/authHttp'
 import { ElMessage } from 'element-plus'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 let form = reactive({
   email: '',
   password: '',
+})
+
+// 判断是不是后端跳转过来的
+const isFromBack = () => {
+  const from = route.query.from // 获取URL参数 'from'
+  if (from === 'back') {
+    ElMessage.success('账号激活成功, 欢迎登录!')
+  }
+}
+
+// 挂载完成后执行函数
+onMounted(() => {
+  isFromBack()
 })
 
 const onsubmit = async () => {
