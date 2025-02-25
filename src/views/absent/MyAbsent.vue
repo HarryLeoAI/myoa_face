@@ -131,10 +131,10 @@ const createAbsent = async () => {
   <OAMain title="个人考勤">
     <el-card style="width: 1000px">
       <div class="header-box">
-        <div>
-          <el-button type="primary" plain @click="toggleCreateAbsentForm">
-            <el-icon><Plus /></el-icon>
-            <span>发起考勤</span>
+        <div v-show="!responder.realname">
+          <el-button type="success" @click="changeStatus(2)" disabled>
+            <el-icon><Check /></el-icon>
+            <span>因为您是老板, 所以考勤自动通过</span>
           </el-button>
         </div>
         <div v-show="responder.realname">
@@ -155,10 +155,10 @@ const createAbsent = async () => {
             <span>已拒绝</span>
           </el-button>
         </div>
-        <div v-show="!responder.realname">
-          <el-button type="success" @click="changeStatus(2)" disabled>
-            <el-icon><Check /></el-icon>
-            <span>因为您是老板, 所以考勤自动通过</span>
+        <div>
+          <el-button type="primary" plain @click="toggleCreateAbsentForm">
+            <el-icon><Plus /></el-icon>
+            <span>发起考勤</span>
           </el-button>
         </div>
       </div>

@@ -1564,3 +1564,11 @@ onMounted(() => {
 ```
 
 > 这样一来, 登录页面正常访问没有任何问题, 后端激活后过来就会因为带有`?from=back`的参数导致组件挂载后调用`isFromBack()`后弹出成功提示
+
+### 员工列表
+
+1. 编辑`@/api/staffHttp.js` 创建`requestStaffs()函数`, 通过`http.get`请求获取数据
+2. 编辑`@/views/StaffList.vue`, 老三样
+   - setup 新建方法`getStaffs()`, 内部异步请求 `requestStaffs()`
+   - 挂载完成周期调用一次上面的方法, 监听page变换调用上面的方法
+   - 模板el-card包el-table, footer 插槽分页, 略

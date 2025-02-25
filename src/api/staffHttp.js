@@ -12,4 +12,10 @@ const createStaff = (email, realname, telphone) => {
   return http.post(path, { email, realname, telphone })
 }
 
-export default { getDepartments, createStaff }
+const requestStaffs = (page) => {
+  const path = `/staff/?page=${page}`
+
+  return http.get(path)
+}
+
+export default { getDepartments, createStaff, requestStaffs }
