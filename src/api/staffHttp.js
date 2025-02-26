@@ -12,10 +12,13 @@ const createStaff = (email, realname, telphone) => {
   return http.post(path, { email, realname, telphone })
 }
 
-const requestStaffs = (page, size) => {
-  const path = `/staff/?page=${page}&size=${size}`
-
-  return http.get(path)
+const requestStaffs = (page, size, params) => {
+  const path = `/staff/`
+  let urlParams = params ? params : {}
+  urlParams['page'] = page
+  urlParams['size'] = size
+  console.log(urlParams)
+  return http.get(path, urlParams)
 }
 
 const lockStaff = (id) => {

@@ -5,9 +5,6 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import staffHttp from '@/api/staffHttp'
 import timeFormatter from '@/utils/timeFormatter'
-import { useAuthStore } from '@/stores/auth'
-
-let authStore = useAuthStore()
 
 // 获取数据
 let staffs = ref([])
@@ -16,9 +13,10 @@ let pagination = reactive({
   page: 1,
 })
 let page_size = ref(10)
-const getStaffs = async (page) => {
+let departments = ref([])
+const getStaffs = async (page, size) => {
   try {
-    let staffsData = await staffHttp.requestStaffs(page, page_size.value)
+    let staffsData = await staffHttp.requestStaffs(page, size, filterForm)
     staffs.value = staffsData.results
     pagination.total = staffsData.count
   } catch (detail) {
@@ -27,11 +25,23 @@ const getStaffs = async (page) => {
 }
 onMounted(async () => {
   getStaffs(1, page_size.value)
+
+  try {
+    departments.value = await staffHttp.getDepartments()
+  } catch (detail) {
+    ElMessage.error(detail)
+  }
 })
 watch(
   () => pagination.page,
   async (page) => {
     getStaffs(page, page_size.value)
+  },
+)
+watch(
+  () => page_size.value,
+  async (size) => {
+    getStaffs(1, size)
   },
 )
 // 判断是老板还是领导
@@ -66,31 +76,96 @@ const onLock = async (uid, index) => {
       })
     })
 }
+
+// 筛选
+let filterForm = reactive({
+  department_id: 0,
+  realname: '',
+  date_range: [],
+})
+const onSearch = () => {
+  getStaffs(1, page_size.value)
+}
+
+// 上传下载
+const onUploadSuccess = () => {
+  console.log('上传成功')
+}
+const onDownload = () => {
+  console.log('我是下载')
+}
 </script>
 
 <template>
   <OAMain title="员工列表">
     <el-card style="width: 1000px">
+      <el-form :inline="true">
+        <el-form-item label="按部门">
+          <el-select v-model="filterForm.department_id" style="width: 100px">
+            <el-option :value="0" label="所有部门" />
+            <el-option
+              v-for="department in departments"
+              :label="department.name"
+              :value="department.id"
+              :key="department.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="按姓名">
+          <el-input v-model="filterForm.realname" name="realname" style="width: 100px"></el-input>
+        </el-form-item>
+        <el-form-item label="按入职时间">
+          <el-date-picker
+            v-model="filterForm.date_range"
+            type="daterange"
+            range-separator="到"
+            start-placeholder="起始日期"
+            end-placeholder="结束日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+          />
+        </el-form-item>
+        <el-form-item style="float: right">
+          <el-tooltip content="点击搜索" placement="left" effect="light">
+            <el-button circle @click="onSearch">
+              <el-icon><Search /></el-icon>
+            </el-button>
+          </el-tooltip>
+        </el-form-item>
+      </el-form>
+    </el-card>
+    <el-card style="width: 1000px">
       <template #header>
         <div class="header-box">
           <div>
-            <el-form-item label="每页">
-              <el-select v-model="page_size" size="small" style="width: 100px">
-                <el-option label="10条/页" :value="10" select />
-                <el-option label="20条/页" :value="20" />
-              </el-select>
-            </el-form-item>
+            <el-form :inline="true">
+              <el-form-item label="每页">
+                <el-select v-model="page_size" size="small" style="width: 100px">
+                  <el-option label="10条/页" :value="10" select />
+                  <el-option label="20条/页" :value="20" />
+                </el-select>
+              </el-form-item>
+            </el-form>
           </div>
-          <div>
-            <p v-if="authStore.user.department.name == '董事会'">
-              您是[董事会]成员, 可以查看所有员工
-            </p>
-            <p v-if="authStore.user.department.name != '董事会'">
-              您是[{{ authStore.user.department.name }}]领导, 可以查看本部员工
-            </p>
+          <div class="right-header">
+            <el-upload
+              action=""
+              :on-success="onUploadSuccess"
+              :show-file-list="false"
+              :auto-upload="true"
+              accept=".xlsx, .xls"
+            >
+              <el-tooltip content="点击上传Excel文件批量创建员工" placement="bottom" effect="light">
+                <el-button type="primary">上传</el-button>
+              </el-tooltip>
+            </el-upload>
+            <div>
+              <el-tooltip content="点击下载被勾选员工为Excel文件" placement="bottom" effect="light">
+                <el-button type="warning" @click="onDownload"> 下载 </el-button>
+              </el-tooltip>
+            </div>
           </div>
         </div>
-        <div>这里是筛选框</div>
       </template>
       <el-table :data="staffs">
         <el-table-column type="selection"></el-table-column>
@@ -146,5 +221,10 @@ const onLock = async (uid, index) => {
 .header-box {
   display: flex;
   justify-content: space-between;
+}
+.right-header {
+  display: flex;
+  justify-content: space-between;
+  min-width: 130px;
 }
 </style>

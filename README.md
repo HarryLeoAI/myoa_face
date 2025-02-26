@@ -1581,3 +1581,39 @@ onMounted(() => {
 4. `lockStaff()` 拼好路由后调用 `http.put` 请求后台的接口实现用户状态变更
 
 ### 员工列表筛选过滤
+
+> 根据部门, 姓名, 加入时间进行筛选
+
+1. 创建一个`reactive`变量, 有三个属性: `department_id`, `realname`, `date_range`(数组)
+2. 创建一个表单绑定这三个数据, 还有一个按钮绑定`@click=onSearch()`事件
+3. 事件触发后, 将变量作为参数传递给`staffHttp.requestStaffs()`, 现在参数很多了(page, page_size, 还有上面3个), 所以改写该方法:
+
+```js
+const requestStaffs = (page, size, params) => {
+  const path = `/staff/`
+  let urlParams = params ? params : {}
+  urlParams['page'] = page
+  urlParams['size'] = size
+  console.log(urlParams)
+  // 最后path不变, urlParams需要处理 http.get()函数
+  return http.get(path, urlParams)
+}
+```
+
+4. 如果要以这样的方法调用`http.get()`,就需要改写该方法
+
+```js
+get = (path, params) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // axios.get()时, 可以直接给该函数传递一个对象为第二参数
+      // 这个参数会自动变成 "?对象里面的key=value&key2=value2&key3=value3 ..."
+      // 这样就不用再调用它时笨笨地拼地址了
+      let result = await this.instance.get(path, { params })
+      resolve(result.data)
+    } catch (error) {
+      reject(error.response.data.detail)
+    }
+  })
+}
+```

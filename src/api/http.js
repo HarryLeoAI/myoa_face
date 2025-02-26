@@ -31,11 +31,10 @@ class Http {
   }
 
   get = (path, params) => {
-    // return this.instance.get(path, params)
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
-        let result = await this.instance.get(path, params)
+        let result = await this.instance.get(path, { params })
         resolve(result.data)
       } catch (error) {
         reject(error.response.data.detail)
