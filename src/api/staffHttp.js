@@ -17,7 +17,6 @@ const requestStaffs = (page, size, params) => {
   let urlParams = params ? params : {}
   urlParams['page'] = page
   urlParams['size'] = size
-  console.log(urlParams)
   return http.get(path, urlParams)
 }
 

@@ -1617,3 +1617,7 @@ get = (path, params) => {
   })
 }
 ```
+
+5. 处理两个逻辑: 导入 `useAuthStore`, 实现判断
+   - 除董事会成员外, 其他部门领导只允许查询本部门的员工: 禁用select, `:disabled="isDirector()"`, 该函数判断当前登录用户的部门名称是否是董事会
+   - 加载完成后, 选项框自动选择本部门, `filterForm.department_id = authStore.user.department.id`

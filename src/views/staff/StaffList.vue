@@ -5,6 +5,9 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import staffHttp from '@/api/staffHttp'
 import timeFormatter from '@/utils/timeFormatter'
+import { useAuthStore } from '@/stores/auth'
+
+let authStore = useAuthStore()
 
 // 获取数据
 let staffs = ref([])
@@ -79,12 +82,19 @@ const onLock = async (uid, index) => {
 
 // 筛选
 let filterForm = reactive({
-  department_id: 0,
+  department_id: authStore.user.department.id,
   realname: '',
   date_range: [],
 })
 const onSearch = () => {
   getStaffs(1, page_size.value)
+}
+const isDirector = () => {
+  if (authStore.user.department.name == '董事会') {
+    return false
+  }
+
+  return true
 }
 
 // 上传下载
@@ -101,7 +111,11 @@ const onDownload = () => {
     <el-card style="width: 1000px">
       <el-form :inline="true">
         <el-form-item label="按部门">
-          <el-select v-model="filterForm.department_id" style="width: 100px">
+          <el-select
+            v-model="filterForm.department_id"
+            style="width: 100px"
+            :disabled="isDirector()"
+          >
             <el-option :value="0" label="所有部门" />
             <el-option
               v-for="department in departments"
