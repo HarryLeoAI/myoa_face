@@ -12,10 +12,15 @@ const createStaff = (email, realname, telphone) => {
   return http.post(path, { email, realname, telphone })
 }
 
-const requestStaffs = (page) => {
-  const path = `/staff/?page=${page}`
+const requestStaffs = (page, size) => {
+  const path = `/staff/?page=${page}&size=${size}`
 
   return http.get(path)
 }
 
-export default { getDepartments, createStaff, requestStaffs }
+const lockStaff = (id) => {
+  const path = `staff/${id}/`
+
+  return http.put(path, { status: '3' })
+}
+export default { getDepartments, createStaff, requestStaffs, lockStaff }

@@ -1572,3 +1572,12 @@ onMounted(() => {
    - setup 新建方法`getStaffs()`, 内部异步请求 `requestStaffs()`
    - 挂载完成周期调用一次上面的方法, 监听page变换调用上面的方法
    - 模板el-card包el-table, footer 插槽分页, 略
+
+### 锁定离职员工
+
+1. 按钮绑定事件
+2. 事件调用 ElmessageBox.confirm
+3. ElmessageBox.confirm.then 调用 `staffHttp.js`里新建的`lockStaff()`函数
+4. `lockStaff()` 拼好路由后调用 `http.put` 请求后台的接口实现用户状态变更
+
+### 员工列表筛选过滤
