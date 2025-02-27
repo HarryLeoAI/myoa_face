@@ -65,6 +65,18 @@ class Http {
       }
     })
   }
+
+  dowloadFile = (path, params) => {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      try {
+        let result = await this.instance.get(path, { params, responseType: 'blob' })
+        resolve(result)
+      } catch (error) {
+        reject(error.response.detail)
+      }
+    })
+  }
 }
 
 export default new Http()

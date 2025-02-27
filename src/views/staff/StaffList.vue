@@ -98,11 +98,36 @@ const isDirector = () => {
 }
 
 // 上传下载
+let tableRef = ref()
 const onUploadSuccess = () => {
   console.log('上传成功')
 }
-const onDownload = () => {
-  console.log('我是下载')
+const onDownload = async () => {
+  let rows = tableRef.value.getSelectionRows()
+
+  if (!rows || rows.length < 1) {
+    ElMessage.info('请选择要导出的员工')
+    return
+  }
+
+  let ids = rows.map((row) => row.uid)
+
+  try {
+    let response = await staffHttp.downloadStaffs(ids)
+
+    let a = document.createElement('a')
+    let href = URL.createObjectURL(response.data)
+    a.href = href
+    a.setAttribute('download', '员工信息.xlsx')
+
+    document.body.appendChild(a)
+    a.click()
+
+    document.body.removeChild(a)
+    URL.revokeObjectURL(href)
+  } catch (detail) {
+    ElMessage.error(detail)
+  }
 }
 </script>
 
@@ -181,7 +206,7 @@ const onDownload = () => {
           </div>
         </div>
       </template>
-      <el-table :data="staffs">
+      <el-table :data="staffs" ref="tableRef">
         <el-table-column type="selection"></el-table-column>
         <el-table-column label="当前状态" fixed width="120" prop="status">
           <template #default="scope">

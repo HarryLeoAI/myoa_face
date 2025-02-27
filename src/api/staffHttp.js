@@ -25,4 +25,11 @@ const lockStaff = (id) => {
 
   return http.put(path, { status: '3' })
 }
-export default { getDepartments, createStaff, requestStaffs, lockStaff }
+
+const downloadStaffs = (ids) => {
+  const path = `staff/download/`
+
+  return http.dowloadFile(path, { ids: JSON.stringify(ids) })
+}
+
+export default { getDepartments, createStaff, requestStaffs, lockStaff, downloadStaffs }

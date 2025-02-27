@@ -1621,3 +1621,94 @@ get = (path, params) => {
 5. 处理两个逻辑: 导入 `useAuthStore`, 实现判断
    - 除董事会成员外, 其他部门领导只允许查询本部门的员工: 禁用select, `:disabled="isDirector()"`, 该函数判断当前登录用户的部门名称是否是董事会
    - 加载完成后, 选项框自动选择本部门, `filterForm.department_id = authStore.user.department.id`
+
+### 员工列表下载为Excel
+
+> 后端已经实现接口, 只需要请求接口, 传入参数ids(被选中的要下载信息的员工)即可
+
+1. 编辑`StaffList.vue`, 给`table`绑定`ref`属性, 再用`getSelectionRows()` 获取被`<el-table-column type="selection"></el-table-column>`勾选的列
+2. 点击下载, 请求后端接口
+3. 下载成功后逐步执行: 创建一个a标签, 绑定href, 插入到html文档里, 立刻自动点击实现下载, 删除a标签
+
+```vue
+<script setup>
+// ...
+
+// 表格对象
+let tableRef = ref()
+// 下载按钮的点击事件
+const onDownload = async () => {
+  // 获取被勾选的数据
+  let rows = tableRef.value.getSelectionRows()
+
+  // 如果没选
+  if (!rows || rows.length < 1) {
+    ElMessage.info('请选择要导出的员工')
+    return
+  }
+
+  // 筛出id obj.map((newKey) => 要写入newKey的每一行数据所需要的列)
+  let ids = rows.map((row) => row.uid)
+
+  // 开始请求接口
+  try {
+    // 获取响应数据
+    let response = await staffHttp.downloadStaffs(ids)
+
+    // 创建a标签
+    let a = document.createElement('a')
+    // 将响应数据的值交给href
+    let href = URL.createObjectURL(response.data)
+    // 给a标签的href绑定上
+    a.href = href
+    // 设置a标签的属性, 是用于下载的, 下载的文件叫做 员工信息.xlsx
+    a.setAttribute('download', '员工信息.xlsx')
+
+    // 插入a标签(这里不用管它插在哪,反正在接下来一瞬间,浏览器里其实多了一个a标签,并且多出来的瞬间就被点击了一下)
+    document.body.appendChild(a)
+    // 点击a标签,实现下载
+    a.click()
+
+    // 点击完了的下一瞬间又立刻删除了
+    document.body.removeChild(a)
+    // 还需要把href变量删除
+    URL.revokeObjectURL(href)
+  } catch (detail) {
+    ElMessage.error(detail)
+  }
+}
+</script>
+
+<template>
+  <el-table :data="staffs" ref="tableRef">
+    <el-table-column type="selection"></el-table-column>
+    <!-- 其他数据 -->
+  </el-table>
+</template>
+```
+
+4. 实现`staffHttp.js`里的`downloadStaffs`方法:
+
+```js
+const downloadStaffs = (ids) => {
+  const path = `staff/download/`
+  // 重点是这里: 要用 JSON.stringify 把数组变成json
+  return http.dowloadFile(path, { ids: JSON.stringify(ids) })
+}
+```
+
+5. 实现`http.js`里的`downloadFile`
+
+```js
+dowloadFile = (path, params) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // 多一个参数, responseType: 'blob', 响应类型: 返回二进制数据块(Binary Large Object，简称 blob)
+      let result = await this.instance.get(path, { params, responseType: 'blob' })
+      resolve(result)
+    } catch (error) {
+      reject(error.response.detail)
+    }
+  })
+}
+```
