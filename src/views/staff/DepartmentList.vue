@@ -21,6 +21,14 @@ onMounted(async () => {
 const filterStaffs = (staffs, department_id) =>
   staffs.filter((staff) => staff?.department?.id === department_id)
 
+const isBoard = () => {
+  if (departmentFormData.id == 1) {
+    return true
+  }
+
+  return false
+}
+
 // 空的数组, 终于存放待选的领导和分管董事
 let leaders = ref([])
 let managers = ref([])
@@ -123,27 +131,44 @@ const changeDepartment = () => {
         <el-input type="text" v-model="departmentFormData.intro" />
       </el-form-item>
       <el-form-item label="部门领导" prop="leader">
-        <el-select v-model="departmentFormData.leader">
-          <el-option
-            v-for="leader in leaders"
-            :label="leader.realname"
-            :value="leader.uid"
-            :key="leader.uid"
-          />
-        </el-select>
+        <el-tooltip
+          :content="isBoard() ? '董事会的直接领导必须是老板!' : '请指定本部门成员为部门直接领导'"
+          effect="light"
+          placement="bottom"
+        >
+          <el-select v-model="departmentFormData.leader" :disabled="isBoard()">
+            <el-option
+              v-for="leader in leaders"
+              :label="leader.realname"
+              :value="leader.uid"
+              :key="leader.uid"
+            />
+          </el-select>
+        </el-tooltip>
       </el-form-item>
       <el-form-item label="分管董事">
-        <el-select
-          v-model="departmentFormData.manager"
-          placeholder="注意!董事会作为中枢部门,请勿设定分管董事!"
+        <el-tooltip
+          :content="
+            isBoard()
+              ? '董事会作为公司最高权力机构无法再指定分管董事!'
+              : '请指定董事会成员为部门分管董事'
+          "
+          effect="light"
+          placement="bottom"
         >
-          <el-option
-            v-for="manager in managers"
-            :label="manager.realname"
-            :value="manager.uid"
-            :key="manager.uid"
-          />
-        </el-select>
+          <el-select
+            v-model="departmentFormData.manager"
+            placeholder="注意!董事会作为中枢部门,请勿设定分管董事!"
+            :disabled="isBoard()"
+          >
+            <el-option
+              v-for="manager in managers"
+              :label="manager.realname"
+              :value="manager.uid"
+              :key="manager.uid"
+            />
+          </el-select>
+        </el-tooltip>
       </el-form-item>
     </el-form>
   </OADialog>
