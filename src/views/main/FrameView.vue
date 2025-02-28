@@ -164,6 +164,10 @@ const resetPassword = async () => {
           <el-icon><Memo /></el-icon>
           <span>员工列表</span>
         </el-menu-item>
+        <el-menu-item index="3-3" :route="{ name: 'departmentlist' }">
+          <el-icon><Grid /></el-icon>
+          <span>部门列表</span>
+        </el-menu-item>
       </el-sub-menu>
     </el-menu>
 

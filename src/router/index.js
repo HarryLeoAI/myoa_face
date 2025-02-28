@@ -10,6 +10,7 @@ import InformList from '@/views/inform/InformList.vue'
 import InformDetail from '@/views/inform/InformDetail.vue'
 import CreateStaff from '@/views/staff/CreateStaff.vue'
 import StaffList from '@/views/staff/StaffList.vue'
+import DepartmentList from '@/views/staff/DepartmentList.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -53,6 +54,11 @@ const router = createRouter({
           path: 'staff/list',
           name: 'stafflist',
           component: StaffList,
+        },
+        {
+          path: 'staff/departmentlist',
+          name: 'departmentlist',
+          component: DepartmentList,
         },
       ],
     },

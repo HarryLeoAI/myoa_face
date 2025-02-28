@@ -32,4 +32,24 @@ const downloadStaffs = (ids) => {
   return http.dowloadFile(path, { ids: JSON.stringify(ids) })
 }
 
-export default { getDepartments, createStaff, requestStaffs, lockStaff, downloadStaffs }
+const requestNoPageStaffs = () => {
+  const path = 'staff/nopaginationlist/'
+
+  return http.get(path)
+}
+
+const changeDepartment = (pk, data) => {
+  const path = `departmetns/${pk}/`
+
+  return http.put(path, data)
+}
+
+export default {
+  getDepartments,
+  createStaff,
+  requestStaffs,
+  lockStaff,
+  downloadStaffs,
+  requestNoPageStaffs,
+  changeDepartment,
+}
