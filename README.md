@@ -1712,3 +1712,39 @@ dowloadFile = (path, params) => {
   })
 }
 ```
+
+### 上传Excel添加员工
+
+> 后端已经写好接口, 现在就需要上传文件访问该接口即可.
+
+1. 强大 elment-plus-upload 组件已经帮我们完成了90%的工作, 只需要写好配置
+
+```vue
+<el-upload
+  #
+  接口路由
+  :action="baseAction + '/staff/upload/'"
+  #
+  成功回调函数
+  :on-success="onUploadSuccess"
+  #
+  失败回调函数
+  :on-error="onUploadError"
+  #
+  配置请求头
+  :headers="{ Authorization: 'JWT ' + authStore.token }"
+  #
+  不显示上传文件的列表
+  :show-file-list="false"
+  #
+  自动上传无需确认
+  :auto-upload="true"
+  #
+  接收的文件格式:Excel文件只有这两种后缀名
+  accept=".xlsx, .xls"
+>
+    <!-- 其他内容 -->
+</el-upload>
+```
+
+2. 在`setup`里需要完成两个回调函数, 和配置请求地址(baseAction):`const baseAction = import.meta.env.VITE_BASE_URL`

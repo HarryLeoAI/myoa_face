@@ -97,11 +97,20 @@ const isDirector = () => {
   return true
 }
 
-// 上传下载
-let tableRef = ref()
-const onUploadSuccess = () => {
-  console.log('上传成功')
+// 上传
+const baseAction = import.meta.env.VITE_BASE_URL
+const onUploadSuccess = (data) => {
+  ElMessage.success(`${data.detail}`)
+  setTimeout(() => {
+    window.location.reload()
+  }, 10000)
 }
+const onUploadError = (error) => {
+  ElMessage.error(JSON.parse(error.message).detail)
+}
+
+// 下载
+let tableRef = ref()
 const onDownload = async () => {
   let rows = tableRef.value.getSelectionRows()
 
@@ -188,8 +197,10 @@ const onDownload = async () => {
           </div>
           <div class="right-header">
             <el-upload
-              action=""
+              :action="baseAction + '/staff/upload/'"
               :on-success="onUploadSuccess"
+              :on-error="onUploadError"
+              :headers="{ Authorization: 'JWT ' + authStore.token }"
               :show-file-list="false"
               :auto-upload="true"
               accept=".xlsx, .xls"
